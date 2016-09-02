@@ -1,0 +1,3 @@
+[submodule "check-vs"]
+	path = check-vs
+	url = https://github.com/DmitrySigaev/check-vs.git
