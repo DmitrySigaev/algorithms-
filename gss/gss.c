@@ -1,11 +1,13 @@
-#include "stdio.h"
+#include <stdio.h>
+#include "gss.h"
 
-typedef struct tagRange {
-	int start, end, sum;
-} Range;
-
-Range maxSubseq(const int sequence[], const int len) {
-	Range r;
+/*
+ * Given a sequence of integers, find a subsequence which maximizes
+ * the sum of its elements, that is, the elements of no other single
+ * subsequence add up to a value larger than this one.
+ */
+range_t maxSubseq(const int sequence[], const int len) {
+	range_t r ;
 	int maxSum = 0, thisSum = 0, i = 0;
 	int start = 0, end = -1, j;
 
@@ -35,16 +37,3 @@ Range maxSubseq(const int sequence[], const int len) {
 	return r;
 }
 
-int main(int argc, char **argv) {
-	int a[] = { -1 , -2 , 3 , 5 , 6 , -2 , -1 , 4 , -4 , 2 , -1 };
-	int alength = sizeof(a) / sizeof(a[0]);
-
-	Range r = maxSubseq(a, alength);
-	printf("Max sum = %d\n", r.sum);
-	int i;
-	for (i = r.start; i < r.end; i++)
-		printf("%d ", a[i]);
-	printf("\n");
-
-	return 0;
-}
