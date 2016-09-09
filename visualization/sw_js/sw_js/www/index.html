@@ -14,7 +14,45 @@
         <title>swjs</title>
     </head>
     <body>
-        <div id="main_frame" style="width:4000px"> </div>
+        <script type="text/javascript" src="scripts/check_input_form.js"></script>
+        <div id="main_frame" style="width:4000px">
+            <form name="parameters" onsubmit="return handleForm()">
+                <table>
+                    <tr>
+                        <td>Sequence 1</td>
+                        <td><input type="text" id="seq_1" value="TCGTACGCTGCAACGATGGTAGA" /></td>
+                        <td><input name="Submit" type="submit" value="Start Smith-Waterman" /></td>
+                    </tr>
+                    <tr>
+                        <td>Sequence 2</td>
+                        <td> <input type="text" id="seq_2" value="TCGTACGCTGCAGACGATGGTAGAA" /> </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Score Matrix</td>
+                        <td>
+                            <input list="matrix_list" id="matrix_ident">
+                                 <datalist id="matrix_list">
+                                     <option value="Simple">simple match/mismatch scoring scheme</option>
+                                     <option value="identityNuc">identity_nuc</option>
+                                 </datalist>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>The penalty for Opening a gap</td>
+                        <td><input type="text" id="gapOpen" value="-11" /></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>The penalty for extending a gap</td>
+                        <td><input type="text" id="gapExt" value="-1" /></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </form>            
+             
+        </div>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="scripts/platformOverrides.js"></script>
         <script type="text/javascript" src="scripts/index.js"></script>
