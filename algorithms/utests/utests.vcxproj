@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\tests\utest_gss.c" />
+    <ClCompile Include="..\..\sw\tests\utest_sw.c" />
     <ClCompile Include="..\..\utests\check_algorithms.c" />
   </ItemGroup>
   <ItemGroup>

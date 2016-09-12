@@ -112,6 +112,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\gss.c" />
+    <ClCompile Include="..\..\sw\sw.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sw\lal_typedefs.h" />
+    <ClInclude Include="..\..\sw\sw.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
