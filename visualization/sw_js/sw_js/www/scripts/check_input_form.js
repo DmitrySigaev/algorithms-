@@ -1,8 +1,5 @@
 /* Function to handle the form submission */
 function handleForm(event){
-    //console.log(document.getElementById("seq_q").value)
-    //draw(document.getElementById("myVal").value)
-
     var seq_1 = document.getElementById("seq_1").value;
     var seq_10 = [];
     for (var i = 0 ; i < seq_1.length; i++) {
@@ -19,6 +16,6 @@ function handleForm(event){
     var gapExt =
         parseFloat(document.getElementById("gapExt").value);
 
-    Calculate(seq_10.join(' '), seq_20.join(' '), matrix, gapOpen, gapExt);
+    CalculateSWandDraw(seq_10.join(' '), seq_20.join(' '), matrix, gapOpen, gapExt);
     return false;
 }

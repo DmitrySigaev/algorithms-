@@ -4,13 +4,13 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define SCORE(a, b, c, d) (((a) == (b)) ? (c) : (d))
+
 /*
  * Sequence alignments are used in different area of computer science.
  * Main feature of alignment is a gap function because complexity of
  * computation depends on this function. The most common and simple
  * case is using a constant gap penalties.
  */
-
 double sw_constant_gap(const search_swcd_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
 {
 	double d_last, u_last, l_last;
