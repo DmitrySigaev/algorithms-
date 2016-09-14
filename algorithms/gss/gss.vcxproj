@@ -112,9 +112,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\gss.c" />
+    <ClCompile Include="..\..\sw\lal_matrix.c" />
     <ClCompile Include="..\..\sw\sw.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sw\lal_matrix.h" />
     <ClInclude Include="..\..\sw\lal_typedefs.h" />
     <ClInclude Include="..\..\sw\sw.h" />
   </ItemGroup>
