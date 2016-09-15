@@ -26,10 +26,23 @@ typedef struct tag_sequence {
 *  @field gap   gap opening cost and gap extension cost
 *  @field score_matrix   score matrix
 */
-typedef struct tag_search_swcd_profile
+typedef struct tag_search_swcg_profile
 {
 	double gap;
 	double *score_matrix;
-} search_swcd_profile_t;
+} search_swcg_profile_t;
+
+/**
+*  Structure of a search profile for smith-waterman algorithm with affine gap
+*  @typedef {struct} search_profile_t
+*  @field gap   gap opening cost and gap extension cost
+*  @field score_matrix   score matrix
+*/
+typedef struct tag_search_swag_profile
+{
+	double gapOpen;
+	double gapExt;
+	double *score_matrix;
+} search_swag_profile_t;
 
 #endif /* _LAL_TYPEDEFS_H_ */
