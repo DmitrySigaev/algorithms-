@@ -33,6 +33,19 @@ typedef struct tag_search_swcg_profile
 } search_swcg_profile_t;
 
 /**
+*  Structure of a search profile for smith-waterman algorithm with constant gap
+*  @typedef {struct} search_profile_t
+*  @field gap   gap opening cost and gap extension cost
+*  @field score_matrix   score matrix
+*/
+typedef struct tag_search_swcg_profile_int
+{
+	int64_t gap;
+	int64_t *score_matrix;
+	double  scale;
+} search_swcg_profile_int_t;
+
+/**
 *  Structure of a search profile for smith-waterman algorithm with affine gap
 *  @typedef {struct} search_profile_t
 *  @field gap   gap opening cost and gap extension cost
