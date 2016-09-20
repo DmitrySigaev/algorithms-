@@ -1,3 +1,9 @@
+/*
+Copyright (C) 2016
+
+Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
+*/
+
 #include <stdio.h>
 #include <float.h>
 #include <malloc.h>

@@ -1,3 +1,9 @@
+/*
+Copyright (C) 2016
+
+Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
+*/
+
 #include <stdio.h>
 #include "gss.h"
 

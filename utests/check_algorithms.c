@@ -17,6 +17,7 @@ Suite* algorithms_suite(void)
 	/* Core test case */
 	addGSSTC(s);
 	addSWTC(s);
+	addScoringMatrixTC(s);
 
 	return s;
 }
