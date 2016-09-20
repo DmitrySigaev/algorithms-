@@ -58,13 +58,23 @@ int matrix_set_value(matrix_t *matrix, element_t value)
 	switch (matrix->type) {
 	case DOUBLETYPE: {
 		for (size_t i = 0; i < matrix->nrows; i++) {
-			memcpy(matrix->ddata[i], &value.d, sizeof(double));
+			if(!value.d)
+				memset(matrix->ddata[i], 0, sizeof(double)*matrix->ncols);
+			else
+				for (size_t j = 0; j < matrix->ncols; j++) {
+					matrix->ddata[i][j] = value.d;
+				}
 		}
 		return 1;
 	}
 	case INTTYPE: {
 		for (size_t i = 0; i < matrix->nrows; i++) {
-			memcpy(matrix->idata[i], &value.i, sizeof(int64_t));
+			if (!value.i)
+				memset(matrix->idata[i], 0, sizeof(int64_t)*matrix->ncols);
+			else
+				for (size_t j = 0; j < matrix->ncols; j++) {
+					matrix->idata[i][j] = value.i;
+				}
 		}
 		return 1;
 	}
@@ -115,7 +125,7 @@ void print_matrix(const matrix_t *matrix)
 		double score = matrix->ddata[0][0];
 		for (size_t i = 0; i < matrix->nrows; i++) {
 			for (size_t j = 0; j < matrix->ncols; j++) {
-				printf(" %f", matrix->ddata[i][j]);
+				printf(" %2.2f", matrix->ddata[i][j]);
 			}
 			printf(" \n");
 		}
