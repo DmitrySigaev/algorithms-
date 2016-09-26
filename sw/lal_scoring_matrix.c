@@ -111,7 +111,9 @@ typedef struct tag_descritor
 {
 	char *data;
 	char **list;
-	size_t len;
+	size_t current_position;
+	size_t length;
+
 }descritor_t;
 
 descritor_t create_descritor(const char *matrixstring, size_t len)
@@ -125,10 +127,10 @@ descritor_t create_descritor(const char *matrixstring, size_t len)
 		Letters = strtok(NULL, "\t\n");
 		rows++;
 	}
-	dsc.len = rows;
+	dsc.length = rows;
 	dsc.list = (char **)malloc(rows * sizeof(char*));
 	dsc.list[0] = dsc.data;
-	for (size_t i = 0; i < dsc.len - 1 /*dispose of heap corruption */; i++) {
+	for (size_t i = 0; i < dsc.length - 1 /*dispose of heap corruption */; i++) {
 		dsc.list[i + 1] = dsc.list[i] + strlen(dsc.list[i]) + 1;
 	}
 	return dsc;
@@ -146,13 +148,14 @@ void free_descritor(descritor_t * desc) {
 
 void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t len) {
 	descritor_t  desc = create_descritor(matrixstring, len);
+	size_t nrows_filled = 0;
+	size_t ncols_filled = 0;
+	size_t next_line;
 	const char *s;
 	const char *pdest;
-	size_t cnt, next_line;
 	char *Letter, *Number;
-	int Columns[32], Row, Count;
+	int Columns[32], Row;
 	float Val;
-	int rows_count, columns_count;
 	int i_row, i_col;
 	/* scaling */
 	const double big_num = 100000000.0;
@@ -170,7 +173,7 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	*/
 	/*end*/
 
-	mtx->sc_double_matrix = matrix(SCORE_MATRIX_DIM, SCORE_MATRIX_DIM, DOUBLETYPE);
+	mtx->sc_double_matrix = matrix(SCORE_MATRIX_DIM, SCORE_MATRIX_DIM, DOUBLETYPE); /*the maximum dimensions are 32x32 */
 	mtx->sc_int_matrix = matrix(SCORE_MATRIX_DIM, SCORE_MATRIX_DIM, INTTYPE);
 	mtx->scale = 1.0;
 	mtx->scaleback = 1.0;
@@ -178,53 +181,62 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	matrix_set_value(&mtx->sc_double_matrix, (element_t) { 0, DOUBLETYPE });
 	matrix_set_value(&mtx->sc_int_matrix, (element_t) { 0, INTTYPE });
 
-	/* Skip the comment */
-	mtx->Doc[0] = '\0';
-	cnt = 0;
-	for (size_t i = 0; i < desc.len; i++) {
-		if (s = desc.list[i]) {
-			if (!(pdest = strstr(s, "#"))) {
-				next_line = i;
-				break;
-			}
-			if ((cnt += strlen(pdest)) + 1 < MAX_DOC_LEN)
-				strcat(mtx->Doc, pdest);
-		}
-
-	}
-
-	/* Parse the column description line */
-	Letter = strtok(desc.list[next_line], " \t\n");
-	columns_count = 0;
-	while (Letter) {
-		Columns[columns_count] = lal_encode31[*Letter];
-		Letter = strtok(NULL, " \t\n");
-		columns_count++;
-	}
-
-	/* Read the table - next step */
-	rows_count = 0;
-	for (size_t i = next_line + 1; i < desc.len; i++)
-		if (s = desc.list[i]) {
-			/* Read the row description letter */
-			if (!(Letter = strtok((char *)s, " \t\n"))) continue; /* ignore empty lines */
-			Row = lal_encode31[*Letter];
-
-			Count = 0;
-			while (Number = strtok(NULL, " \t\n")) {
-				if (sscanf(Number, "%f", &Val) != 1) {
-					printf("Bad type of comparison matrix \n");
+	{ /* fills docs  */
+		size_t cnt = 0;
+		mtx->Doc[0] = '\0';
+		for (size_t i = 0; i < desc.length; i++) {
+			if (s = desc.list[i]) {
+				if (!(pdest = strstr(s, "#"))) {
+					next_line = i;
 					break;
 				}
-				/* ncbi enable rectangular (not square) matrix. We are make it simmetric. */
-				mtx->sc_double_matrix.ddata[Row][Columns[Count]] = Val;
-				if (Val != data4vec_infty)
-					update(&second_max_negative, &max_negative, &min_positive, Val);
-				Count++;
+				if ((cnt += strlen(pdest)) + 1 < MAX_DOC_LEN)
+					strcat(mtx->Doc, pdest);
 			}
-			rows_count++;
-
 		}
+		// output next_line
+	}
+
+	{ /* Parse the column description line */
+		Letter = strtok(desc.list[next_line], " \t\n");
+		size_t columns_count = 0;
+		while (Letter) {
+			Columns[columns_count] = lal_encode31[*Letter];
+			Letter = strtok(NULL, " \t\n");
+			columns_count++;
+		}
+		ncols_filled = columns_count;
+		next_line++;
+		// output next_line
+	}
+
+	{ /* Read the table - next step */
+		size_t rows_count = 0;
+		for (size_t i = next_line; i < desc.length; i++)
+			if (s = desc.list[i]) {
+				size_t szCount = 0;
+				/* Read the row description letter */
+				if (!(Letter = strtok((char *)s, " \t\n"))) continue; /* ignore empty lines */
+				Row = lal_encode31[*Letter];
+
+				szCount = 0;
+				while (Number = strtok(NULL, " \t\n")) {
+					if (sscanf(Number, "%f", &Val) != 1) {
+						printf("Bad type of comparison matrix \n");
+						break;
+					}
+					/* ncbi enable rectangular (not square) matrix. We are make it simmetric. */
+					mtx->sc_double_matrix.ddata[Row][Columns[szCount]] = Val;
+					if (Val != data4vec_infty)
+						update(&second_max_negative, &max_negative, &min_positive, Val);
+					szCount++;
+				}
+				rows_count++;
+
+			}
+		nrows_filled = rows_count;
+	}
+
 	free_descritor(&desc);
 	/* calucate scaling factor and integer matrix*/
 	mtx->man2mip[0] = second_max_negative;
@@ -242,12 +254,15 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	   not square. In such a case the matrix is forced to be symmetric. This is not
 	   necessarily the right thing to be done but this is the convention here */
 
-	if (rows_count != columns_count) { /* TODO: unit tests */
-		if (rows_count > columns_count) {
+	if (nrows_filled != ncols_filled) { /* TODO: unit tests */
+		if (nrows_filled > ncols_filled) {
 			for (i_row = 0; i_row < mtx->sc_double_matrix.nrows; i_row++) {
+				mtx->sc_int_matrix.idata[i_row][i_row] = lrint(mtx->sc_double_matrix.ddata[i_row][i_row] * result); /* fills the main diagonal */
 				for (i_col = 0; i_col < i_row; i_col++) {
+					int64_t scaled_value = lrint(mtx->sc_double_matrix.ddata[i_row][i_col] * result);
 					mtx->sc_double_matrix.ddata[i_col][i_row] = mtx->sc_double_matrix.ddata[i_row][i_col];
-					mtx->sc_int_matrix.idata[i_row][i_col] = lrint(mtx->sc_double_matrix.ddata[i_row][i_col] * result);
+					mtx->sc_int_matrix.idata[i_col][i_row] = scaled_value;
+					mtx->sc_int_matrix.idata[i_row][i_col] = scaled_value;
 				}
 			}
 		}
