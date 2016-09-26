@@ -75,6 +75,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -82,6 +83,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -112,11 +114,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\gss.c" />
+    <ClCompile Include="..\..\sw\lal_scoring_matrix.c" />
     <ClCompile Include="..\..\sw\lal_matrix.c" />
+    <ClCompile Include="..\..\sw\lal_tables.c" />
     <ClCompile Include="..\..\sw\sw.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sw\lal_matrix.h" />
+    <ClInclude Include="..\..\sw\lal_scoring_matrix.h" />
+    <ClInclude Include="..\..\sw\lal_tables.h" />
     <ClInclude Include="..\..\sw\lal_typedefs.h" />
     <ClInclude Include="..\..\sw\sw.h" />
   </ItemGroup>

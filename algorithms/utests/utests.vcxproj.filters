@@ -24,6 +24,9 @@
     <ClCompile Include="..\..\sw\tests\utest_sw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sw\tests\utest_scoring_matrix.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\utests\tests.h">
