@@ -136,6 +136,26 @@ descritor_t create_descritor(const char *matrixstring, size_t len)
 	return dsc;
 }
 
+static int read_docs(scoring_matrix_t *mtx, descritor_t * desc)
+{ /* fills docs  */
+	size_t cnt = 0;
+	const char *s;
+	const char *pshift;
+	mtx->Doc[0] = '\0';
+	desc->current_position = 0;
+	for (size_t i = 0; i < desc->length; i++) {
+		if (s = desc->list[i]) {
+			if (!(pshift = strstr(s, "#"))) {
+				desc->current_position = i; /* next line */
+				return 1; /* successful docs reading */
+			}
+			if ((cnt += strlen(pshift)) + 1 < MAX_DOC_LEN)
+				strcat(mtx->Doc, pshift);
+		}
+	}
+	return 0;
+}
+
 void free_descritor(descritor_t * desc) {
 	desc->list[0] = NULL;
 	if (desc->data)
@@ -151,8 +171,6 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	size_t nrows_filled = 0;
 	size_t ncols_filled = 0;
 	size_t next_line;
-	const char *s;
-	const char *pdest;
 	char *Letter, *Number;
 	int Columns[32], Row;
 	float Val;
@@ -181,22 +199,9 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	matrix_set_value(&mtx->sc_double_matrix, (element_t) { 0, DOUBLETYPE });
 	matrix_set_value(&mtx->sc_int_matrix, (element_t) { 0, INTTYPE });
 
-	{ /* fills docs  */
-		size_t cnt = 0;
-		mtx->Doc[0] = '\0';
-		for (size_t i = 0; i < desc.length; i++) {
-			if (s = desc.list[i]) {
-				if (!(pdest = strstr(s, "#"))) {
-					next_line = i;
-					break;
-				}
-				if ((cnt += strlen(pdest)) + 1 < MAX_DOC_LEN)
-					strcat(mtx->Doc, pdest);
-			}
-		}
-		// output next_line
-	}
+	read_docs(mtx, &desc);
 
+	next_line = desc.current_position;
 	{ /* Parse the column description line */
 		Letter = strtok(desc.list[next_line], " \t\n");
 		size_t columns_count = 0;
@@ -212,6 +217,7 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 
 	{ /* Read the table - next step */
 		size_t rows_count = 0;
+		const char *s;
 		for (size_t i = next_line; i < desc.length; i++)
 			if (s = desc.list[i]) {
 				size_t szCount = 0;
