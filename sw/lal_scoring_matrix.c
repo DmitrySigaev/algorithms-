@@ -156,6 +156,27 @@ static int read_docs(scoring_matrix_t *mtx, descritor_t * desc)
 	return 0;
 }
 
+typedef struct tag_table_descritor
+{
+	int Columns[SCORE_MATRIX_DIM];
+	size_t ncols;
+	size_t nrows;
+}table_descritor_t;
+
+static table_descritor_t read_column_desc(scoring_matrix_t *mtx, descritor_t * desc)
+{ /* Parse the column description line */
+	table_descritor_t td;
+	char *Letter = strtok(desc->list[desc->current_position], " \t\n");
+	td.ncols = 0;
+	td.nrows = 0;
+	while (Letter) {
+		td.Columns[td.ncols] = lal_encode31[*Letter];
+		Letter = strtok(NULL, " \t\n");
+		td.ncols++;
+	}
+	return td;
+}
+
 void free_descritor(descritor_t * desc) {
 	desc->list[0] = NULL;
 	if (desc->data)
@@ -168,11 +189,11 @@ void free_descritor(descritor_t * desc) {
 
 void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t len) {
 	descritor_t  desc = create_descritor(matrixstring, len);
-	size_t nrows_filled = 0;
-	size_t ncols_filled = 0;
+	size_t nrows_filled;
+	size_t ncols_filled;
 	size_t next_line;
 	char *Letter, *Number;
-	int Columns[32], Row;
+	int Row;
 	float Val;
 	int i_row, i_col;
 	/* scaling */
@@ -199,22 +220,12 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	matrix_set_value(&mtx->sc_double_matrix, (element_t) { 0, DOUBLETYPE });
 	matrix_set_value(&mtx->sc_int_matrix, (element_t) { 0, INTTYPE });
 
-	read_docs(mtx, &desc);
-
-	next_line = desc.current_position;
-	{ /* Parse the column description line */
-		Letter = strtok(desc.list[next_line], " \t\n");
-		size_t columns_count = 0;
-		while (Letter) {
-			Columns[columns_count] = lal_encode31[*Letter];
-			Letter = strtok(NULL, " \t\n");
-			columns_count++;
-		}
-		ncols_filled = columns_count;
-		next_line++;
-		// output next_line
+	if (!read_docs(mtx, &desc)) {
+		printf("docs not found");
 	}
-
+	table_descritor_t td = read_column_desc(mtx, &desc);
+	ncols_filled = td.ncols;
+	next_line = desc.current_position;
 	{ /* Read the table - next step */
 		size_t rows_count = 0;
 		const char *s;
@@ -232,7 +243,7 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 						break;
 					}
 					/* ncbi enable rectangular (not square) matrix. We are make it simmetric. */
-					mtx->sc_double_matrix.ddata[Row][Columns[szCount]] = Val;
+					mtx->sc_double_matrix.ddata[Row][td.Columns[szCount]] = Val;
 					if (Val != data4vec_infty)
 						update(&second_max_negative, &max_negative, &min_positive, Val);
 					szCount++;
