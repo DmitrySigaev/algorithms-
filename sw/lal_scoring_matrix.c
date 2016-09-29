@@ -174,8 +174,55 @@ static table_descritor_t read_column_desc(scoring_matrix_t *mtx, descritor_t * d
 		Letter = strtok(NULL, " \t\n");
 		td.ncols++;
 	}
+	desc->current_position++;
 	return td;
 }
+
+typedef struct tag_scaling_descritor
+{
+	double second_max_negative;
+	double max_negative; /* negative closest to 0 */
+	double min_positive; /* Minimal positive element  */
+}scaling_descritor_t;
+
+scaling_descritor_t read_table(scoring_matrix_t *mtx, descritor_t * desc, table_descritor_t *td)
+{ /* Read the table - next step */
+	const double big_num = 100000000.0;
+	double min_positive = big_num; /* Minimal positive element  */
+	double second_max_negative = -big_num;
+	double max_negative = -big_num; /* negative closest to 0 */
+	size_t rows_count = 0;
+	const char *s;
+	const float data4vec_infty = INT_MIN;
+	for (size_t i = desc->current_position; i < desc->length; i++)
+		if (s = desc->list[i]) {
+			char *Letter = strtok((char *)s, " \t\n");
+			/* Read the row description letter */
+			if (!(Letter)) {
+				continue; /* ignore empty lines */
+			} else {
+				char *Number;
+				size_t cRow = lal_encode31[*Letter];
+				size_t szCount = 0;
+				while (Number = strtok(NULL, " \t\n")) {
+					float Val;
+					if (sscanf(Number, "%f", &Val) != 1) {
+						printf("Bad type of comparison matrix \n");
+						break;
+					}
+					/* ncbi enable rectangular (not square) matrix. We are make it simmetric. */
+					mtx->sc_double_matrix.ddata[cRow][td->Columns[szCount]] = Val;
+					if (Val != data4vec_infty)
+						update(&second_max_negative, &max_negative, &min_positive, Val);
+					szCount++;
+				}
+			}
+			rows_count++;
+		}
+	td->nrows = rows_count;
+	return (scaling_descritor_t) { second_max_negative, max_negative, min_positive };
+}
+
 
 void free_descritor(descritor_t * desc) {
 	desc->list[0] = NULL;
@@ -189,21 +236,6 @@ void free_descritor(descritor_t * desc) {
 
 void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t len) {
 	descritor_t  desc = create_descritor(matrixstring, len);
-	size_t nrows_filled;
-	size_t ncols_filled;
-	size_t next_line;
-	char *Letter, *Number;
-	int Row;
-	float Val;
-	int i_row, i_col;
-	/* scaling */
-	const double big_num = 100000000.0;
-	const float data4vec_infty = INT_MIN;
-
-	double min_positive = big_num; /* Minimal positive element  */
-	double second_max_negative = -big_num;
-	double max_negative = -big_num; /* negative closest to 0 */
-
 	double result = -1;
 	/* return scale based on analysis of the profile
 	The scale is not optimal but works around the following ideas:
@@ -224,58 +256,30 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 		printf("docs not found");
 	}
 	table_descritor_t td = read_column_desc(mtx, &desc);
-	ncols_filled = td.ncols;
-	next_line = desc.current_position;
-	{ /* Read the table - next step */
-		size_t rows_count = 0;
-		const char *s;
-		for (size_t i = next_line; i < desc.length; i++)
-			if (s = desc.list[i]) {
-				size_t szCount = 0;
-				/* Read the row description letter */
-				if (!(Letter = strtok((char *)s, " \t\n"))) continue; /* ignore empty lines */
-				Row = lal_encode31[*Letter];
-
-				szCount = 0;
-				while (Number = strtok(NULL, " \t\n")) {
-					if (sscanf(Number, "%f", &Val) != 1) {
-						printf("Bad type of comparison matrix \n");
-						break;
-					}
-					/* ncbi enable rectangular (not square) matrix. We are make it simmetric. */
-					mtx->sc_double_matrix.ddata[Row][td.Columns[szCount]] = Val;
-					if (Val != data4vec_infty)
-						update(&second_max_negative, &max_negative, &min_positive, Val);
-					szCount++;
-				}
-				rows_count++;
-
-			}
-		nrows_filled = rows_count;
-	}
-
+	scaling_descritor_t sd = read_table(mtx, &desc, &td);
 	free_descritor(&desc);
+
 	/* calucate scaling factor and integer matrix*/
-	mtx->man2mip[0] = second_max_negative;
-	mtx->man2mip[1] = max_negative;
-	mtx->man2mip[2] = min_positive;
-	assert(max_negative < 0);
-	if (min_positive > -max_negative) {
-		result = rint(-second_max_negative / max_negative) / second_max_negative; /* |max_negative| < |min_positive|  */
+	mtx->man2mip[0] = sd.second_max_negative;
+	mtx->man2mip[1] = sd.max_negative;
+	mtx->man2mip[2] = sd.min_positive;
+	assert(sd.max_negative < 0);
+	if (sd.min_positive > -sd.max_negative) {
+		result = rint(-sd.second_max_negative / sd.max_negative) / sd.second_max_negative; /* |max_negative| < |min_positive|  */
 	}
 	else {
-		result = rint(max_negative / min_positive) / max_negative;
+		result = rint(sd.max_negative / sd.min_positive) / sd.max_negative;
 	}
 
 	/* The following part is written on order to take care of rectangular matrices that are
 	   not square. In such a case the matrix is forced to be symmetric. This is not
 	   necessarily the right thing to be done but this is the convention here */
 
-	if (nrows_filled != ncols_filled) { /* TODO: unit tests */
-		if (nrows_filled > ncols_filled) {
-			for (i_row = 0; i_row < mtx->sc_double_matrix.nrows; i_row++) {
+	if (td.nrows != td.ncols) { /* TODO: unit tests */
+		if (td.nrows > td.ncols) {
+			for (size_t i_row = 0; i_row < mtx->sc_double_matrix.nrows; i_row++) {
 				mtx->sc_int_matrix.idata[i_row][i_row] = lrint(mtx->sc_double_matrix.ddata[i_row][i_row] * result); /* fills the main diagonal */
-				for (i_col = 0; i_col < i_row; i_col++) {
+				for (size_t i_col = 0; i_col < i_row; i_col++) {
 					int64_t scaled_value = lrint(mtx->sc_double_matrix.ddata[i_row][i_col] * result);
 					mtx->sc_double_matrix.ddata[i_col][i_row] = mtx->sc_double_matrix.ddata[i_row][i_col];
 					mtx->sc_int_matrix.idata[i_col][i_row] = scaled_value;
@@ -284,17 +288,20 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 			}
 		}
 		else {
-			for (i_col = 0; i_col < mtx->sc_double_matrix.ncols; i_col++) {
-				for (i_row = i_col + 1; i_row < mtx->sc_double_matrix.nrows; i_row++) {
+			for (size_t i_col = 0; i_col < mtx->sc_double_matrix.ncols; i_col++) {
+				mtx->sc_int_matrix.idata[i_col][i_col] = lrint(mtx->sc_double_matrix.ddata[i_col][i_col] * result); /* fills the main diagonal */
+				for (size_t i_row = i_col + 1; i_row < mtx->sc_double_matrix.nrows; i_row++) {
+					int64_t scaled_value = lrint(mtx->sc_double_matrix.ddata[i_col][i_row] * result);
 					mtx->sc_double_matrix.ddata[i_row][i_col] = mtx->sc_double_matrix.ddata[i_col][i_row];
-					mtx->sc_int_matrix.idata[i_row][i_col] = lrint(mtx->sc_double_matrix.ddata[i_col][i_row] * result);
+					mtx->sc_int_matrix.idata[i_row][i_col] = scaled_value;
+					mtx->sc_int_matrix.idata[i_col][i_row] = scaled_value;
 				}
 			}
 		}
 	}
 	else {
-		for (i_row = 0; i_row < mtx->sc_double_matrix.nrows; i_row++)
-			for (i_col = 0; i_col < mtx->sc_double_matrix.ncols; i_col++)
+		for (size_t i_row = 0; i_row < mtx->sc_double_matrix.nrows; i_row++)
+			for (size_t i_col = 0; i_col < mtx->sc_double_matrix.ncols; i_col++)
 				mtx->sc_int_matrix.idata[i_col][i_row] = lrint(mtx->sc_double_matrix.ddata[i_row][i_col] * result);
 	}
 
