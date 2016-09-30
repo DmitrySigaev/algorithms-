@@ -27,6 +27,18 @@ START_TEST(test_bad_matrix)
 
 }END_TEST
 
+START_TEST(test_gaptest1_matrix)
+{
+	scoring_matrix_t mtx;
+	int status = read_scoring_matrix(&mtx, gaptest1, strlen(gaptest1));
+//	print_matrix(&mtx.sc_int_matrix);
+	ck_assert_int_eq(status, 1); /* ok */
+	ck_assert_int_eq((int)mtx.scale, 1);
+	ck_assert_int_eq(mtx.sc_int_matrix.idata[0][0], 2); /* in the upper-left corner */
+	free_scoring_matrix(&mtx);
+
+}END_TEST
+
 START_TEST(test_read_scoring_matrix)
 {
 	scoring_matrix_t mtx;
@@ -43,6 +55,7 @@ START_TEST(test_read_scoring_matrix)
 
 void addScoringMatrixTC(Suite *s) {
 	TCase *tc_core = tcase_create("Scoring Matrix");
+	tcase_add_test(tc_core, test_gaptest1_matrix);
 	tcase_add_test(tc_core, test_bad_matrix);
 	tcase_add_test(tc_core, test_read_scoring_matrix);
 

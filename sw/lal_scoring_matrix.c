@@ -321,6 +321,7 @@ int read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t 
 
 	mtx->scale = result;
 	mtx->scaleback = 1.0 / result;
+	return 1;
 }
 
 

@@ -17,4 +17,6 @@ extern const char cns[31];
 extern const char lal_decode31_s[31];
 extern char identity_nuc[];
 extern char blosum100[];
+extern char gaptest1[];
+
 #endif /* _LAL_TABLES_H_ */

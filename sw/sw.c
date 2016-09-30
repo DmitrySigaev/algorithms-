@@ -98,7 +98,6 @@ int64_t sw_constant_gap_int(const search_swcg_profile_int_t * sp, const sequence
  */
 double sw_affine_gap(const search_swag_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
 {
-
 	double d_last, u_last, l_last, e_last, f_last;
 	double d_new, u_new, l_new, e_new, f_new;
 
