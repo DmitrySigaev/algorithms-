@@ -161,6 +161,7 @@ typedef struct tag_table_descritor
 	int Columns[SCORE_MATRIX_DIM];
 	size_t ncols;
 	size_t nrows;
+	int status;
 }table_descritor_t;
 
 static table_descritor_t read_column_desc(scoring_matrix_t *mtx, descritor_t * desc)
@@ -169,11 +170,16 @@ static table_descritor_t read_column_desc(scoring_matrix_t *mtx, descritor_t * d
 	char *Letter = strtok(desc->list[desc->current_position], " \t\n");
 	td.ncols = 0;
 	td.nrows = 0;
-	while (Letter) {
+	td.status = 0;
+	while (Letter && td.ncols < mtx->sc_double_matrix.ncols) {
 		td.Columns[td.ncols] = lal_encode31[*Letter];
 		Letter = strtok(NULL, " \t\n");
 		td.ncols++;
 	}
+	if (!Letter)
+		td.status = 1; /* read all columns successfully*/
+	else
+		printf("bad format of matrix\n");
 	desc->current_position++;
 	return td;
 }
@@ -234,8 +240,9 @@ void free_descritor(descritor_t * desc) {
 	*desc = (descritor_t) { NULL, NULL, 0 };
 }
 
-void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t len) {
+int read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t len) {
 	descritor_t  desc = create_descritor(matrixstring, len);
+	table_descritor_t td;
 	double result = -1;
 	/* return scale based on analysis of the profile
 	The scale is not optimal but works around the following ideas:
@@ -255,7 +262,14 @@ void read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t
 	if (!read_docs(mtx, &desc)) {
 		printf("docs not found");
 	}
-	table_descritor_t td = read_column_desc(mtx, &desc);
+
+	td = read_column_desc(mtx, &desc);
+	if (!td.status) {
+		mtx->scale = result;
+		free_descritor(&desc);
+		return 0;
+	}
+	
 	scaling_descritor_t sd = read_table(mtx, &desc, &td);
 	free_descritor(&desc);
 
