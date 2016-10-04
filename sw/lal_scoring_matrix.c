@@ -11,9 +11,11 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #include <math.h>
 #include <assert.h>
 
+#include "lal_report.h"
 #include "lal_matrix.h"
 #include "lal_tables.h"
 #include "lal_scoring_matrix.h"
+
 
 
 int8_t * score_matrix_8 = NULL; // char
@@ -179,7 +181,7 @@ static table_descritor_t read_column_desc(scoring_matrix_t *mtx, descritor_t * d
 	if (!Letter)
 		td.status = 1; /* read all columns successfully*/
 	else
-		printf("bad format of matrix\n");
+		report_error("bad format of matrix\n");
 	desc->current_position++;
 	return td;
 }
@@ -213,7 +215,7 @@ scaling_descritor_t read_table(scoring_matrix_t *mtx, descritor_t * desc, table_
 				while (Number = strtok(NULL, " \t\n")) {
 					float Val;
 					if (sscanf(Number, "%f", &Val) != 1) {
-						printf("Bad type of comparison matrix \n");
+						report_error("Bad type of comparison matrix \n");
 						break;
 					}
 					/* ncbi enable rectangular (not square) matrix. We are make it simmetric. */
@@ -260,7 +262,7 @@ int read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t 
 	matrix_set_value(&mtx->sc_int_matrix, (element_t) { 0, INTTYPE });
 
 	if (!read_docs(mtx, &desc)) {
-		printf("docs not found");
+		report_warning("docs not found");
 	}
 
 	td = read_column_desc(mtx, &desc);

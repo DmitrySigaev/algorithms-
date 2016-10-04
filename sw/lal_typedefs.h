@@ -7,6 +7,8 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #ifndef _LAL_TYPEDEFS_H_
 #define _LAL_TYPEDEFS_H_
 
+#include <stdint.h>
+
 /**
  *  Structure of a sequence
  *  @typedef {struct} sequence_t

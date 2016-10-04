@@ -114,13 +114,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\gss.c" />
+    <ClCompile Include="..\..\sw\lal_encoding.c" />
     <ClCompile Include="..\..\sw\lal_scoring_matrix.c" />
     <ClCompile Include="..\..\sw\lal_matrix.c" />
     <ClCompile Include="..\..\sw\lal_tables.c" />
     <ClCompile Include="..\..\sw\sw.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sw\lal_encoding.h" />
     <ClInclude Include="..\..\sw\lal_matrix.h" />
+    <ClInclude Include="..\..\sw\lal_report.h" />
     <ClInclude Include="..\..\sw\lal_scoring_matrix.h" />
     <ClInclude Include="..\..\sw\lal_tables.h" />
     <ClInclude Include="..\..\sw\lal_typedefs.h" />
