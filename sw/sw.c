@@ -10,7 +10,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define SCORE(a, b, c, d) (((a) == (b)) ? (c) : (d))
-
+#define VDTAVLE(a, b) (sp->mtx->sc_double_matrix.ddata[(a)][(b)])
 /*
  * Sequence alignments are used in different area of computer science.
  * Main feature of alignment is a gap function because complexity of
@@ -21,8 +21,8 @@ double sw_constant_gap_double(const search_swcg_profile_t * sp, const sequence_t
 {
 	double d_last, u_last, l_last;
 	double d_new, u_new, l_new;
+	double v;
 	matrix_t score_mat = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE);
-
 	for (size_t i = 0; i <= dseq->len; i++) {
 		for (size_t j = 0; j <= qseq->len; j++) {
 			// This is the first row / column which is all zeros
@@ -35,7 +35,11 @@ double sw_constant_gap_double(const search_swcg_profile_t * sp, const sequence_t
 				u_last = score_mat.ddata[i - 1][j];
 				l_last = score_mat.ddata[i][j - 1];
 			}
-			d_new = d_last + SCORE(dseq->seq[i - 1], dseq->seq[j - 1], 1.0, -1.0);
+			if (!sp->mtx)
+				v = SCORE(dseq->seq[i - 1], dseq->seq[j - 1], 1.0, -1.0);
+			else
+				v = VDTAVLE(dseq->seq[i - 1], dseq->seq[j - 1]);
+			d_new = d_last + v;
 			u_new = u_last + sp->gap;
 			l_new = l_last + sp->gap;
 			score_mat.ddata[i][j] = MAX(MAX(d_new, u_new), MAX(l_new, 0));

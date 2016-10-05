@@ -8,7 +8,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #define _LAL_TYPEDEFS_H_
 
 #include <stdint.h>
-
+#include "lal_scoring_matrix.h"
 /**
  *  Structure of a sequence
  *  @typedef {struct} sequence_t
@@ -31,7 +31,7 @@ typedef struct tag_sequence {
 typedef struct tag_search_swcg_profile
 {
 	double gap;
-	double *score_matrix;
+	scoring_matrix_t *mtx; /*can be NULL then use SCORE define*/
 } search_swcg_profile_t;
 
 /**
@@ -43,8 +43,7 @@ typedef struct tag_search_swcg_profile
 typedef struct tag_search_swcg_profile_int
 {
 	int64_t gap;
-	int64_t *score_matrix;
-	double  scale;
+	scoring_matrix_t *mtx;
 } search_swcg_profile_int_t;
 
 /**
@@ -57,7 +56,7 @@ typedef struct tag_search_swag_profile
 {
 	double gapOpen;
 	double gapExt;
-	double *score_matrix;
+	scoring_matrix_t *mtx;
 } search_swag_profile_t;
 
 #endif /* _LAL_TYPEDEFS_H_ */
