@@ -59,4 +59,15 @@ typedef struct tag_search_swag_profile
 	scoring_matrix_t *mtx;
 } search_swag_profile_t;
 
+typedef struct {
+	size_t x_s; /* x - left position or start   */
+	size_t x_f; /* x - right position or finish */
+	size_t y_s; /* y - top position or start   */
+	size_t y_f; /* y - bottom position or finish */
+	union {
+		size_t score;
+		double dscore;
+	};
+} region_t;
+
 #endif /* _LAL_TYPEDEFS_H_ */

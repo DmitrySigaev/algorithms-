@@ -31,7 +31,7 @@ START_TEST(test_gaptest1_matrix)
 {
 	scoring_matrix_t mtx;
 	int status = read_scoring_matrix(&mtx, gaptest1, strlen(gaptest1));
-//	print_matrix(&mtx.sc_int_matrix);
+	//	print_matrix(&mtx.sc_int_matrix);
 	ck_assert_int_eq(status, 1); /* ok */
 	ck_assert_int_eq((int)mtx.scale, 1);
 	ck_assert_int_eq(mtx.sc_int_matrix.idata[0][0], 2); /* in the upper-left corner */
@@ -42,12 +42,14 @@ START_TEST(test_gaptest1_matrix)
 START_TEST(test_read_scoring_matrix)
 {
 	scoring_matrix_t mtx;
-	read_scoring_matrix(&mtx, identity_nuc, strlen(identity_nuc));
-//	print_matrix(&mtx.sc_double_matrix);
-//	print_matrix(&mtx.sc_int_matrix);
+	int status = read_scoring_matrix(&mtx, identity_nuc, strlen(identity_nuc));
+	ck_assert_int_eq(status, 1); /* ok */
+	//	print_matrix(&mtx.sc_double_matrix);
+	//	print_matrix(&mtx.sc_int_matrix);
 	ck_assert_int_eq(mtx.sc_int_matrix.idata[0][0], 5); /* in the upper-left corner */
 	free_scoring_matrix(&mtx);
-	read_scoring_matrix(&mtx, blosum100, strlen(blosum100));
+	status = read_scoring_matrix(&mtx, blosum100, strlen(blosum100));
+	ck_assert_int_eq(status, 1); /* ok */
 	ck_assert_int_eq(mtx.sc_int_matrix.idata[27][27], 1); /* *x* in the bottom-rignt corner */
 	ck_assert_int_eq(mtx.sc_int_matrix.idata[25][27], -10); /* zx*  */
 	free_scoring_matrix(&mtx);
