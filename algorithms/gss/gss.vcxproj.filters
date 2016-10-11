@@ -33,6 +33,9 @@
     <ClCompile Include="..\..\sw\lal_encoding.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sw\gc_sw.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sw\sw.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sw\lal_report.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sw\gc_sw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

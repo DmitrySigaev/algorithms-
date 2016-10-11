@@ -10,6 +10,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #include <stdio.h>
 #include <malloc.h>
 #include "../sw.h"
+#include "../gc_sw.h"
 #include "../lal_encoding.h"
 #include "../lal_tables.h"
 
@@ -185,6 +186,29 @@ START_TEST(test_sw_affine_double_encoded_vtable_195swipe)
 	ck_assert_int_eq((int)score.dscore, 195); /* Max score */
 }END_TEST
 
+START_TEST(test_sw_affine_double_encoded_vtable_195gencore)
+{
+	scoring_matrix_t mtx;
+	int status = read_scoring_matrix(&mtx, gaptest1, strlen(gaptest1));
+	//	char seq1[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCACGCCGCACTACTATGACCCAACGTAGGAAGTTGG" };
+	char seq1[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCACGCCGCACTACTATGACCCAACGTAGGAAGTTGG" };
+
+	size_t len1 = strlen(seq1);
+	char seq2[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
+//	0x01c79c10      "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG"
+
+	size_t len2 = strlen(seq2);
+	sequence_t inseq1 = { 1, (char *)seq1, len1 };
+	sequence_t inseq2 = { 2, (char *)seq2, len2 };
+	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
+	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
+	seq2encodedseq(inseq1, enseq1, lal_encode31);
+	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
+	double score = sw_gencore(&sp, &enseq1, &enseq2);
+	ck_assert_int_eq((int)score, 195); /* Max score */
+}END_TEST
+
 START_TEST(test_sw_affine_double_encoded_vtable_88)
 {
 	scoring_matrix_t mtx;
@@ -223,8 +247,30 @@ START_TEST(test_sw_affine_double_encoded_vtable_87swipe)
 	ck_assert_int_eq((int)score.dscore, 87); /* Max score */
 }END_TEST
 
+
+START_TEST(test_sw_affine_double_encoded_vtable_88gencore)
+{
+	scoring_matrix_t mtx;
+	int status = read_scoring_matrix(&mtx, identity_nuc, strlen(identity_nuc));
+	char seq1[] = { "TCGTACGCTGCAACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
+	size_t len1 = strlen(seq1);
+	char seq2[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
+	size_t len2 = strlen(seq2);
+	sequence_t inseq1 = { 1, (char *)seq1, len1 };
+	sequence_t inseq2 = { 2, (char *)seq2, len2 };
+	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
+	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
+	seq2encodedseq(inseq1, enseq1, lal_encode31);
+	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
+	double score = sw_gencore(&sp, &enseq1, &enseq2);
+	ck_assert_int_eq((int)score, 88); /* Max score */
+}END_TEST
+
 void addSWTC(Suite *s) {
 	TCase *tc_core = tcase_create("SW");
+	tcase_add_test(tc_core, test_sw_affine_double_encoded_vtable_195gencore); 
+	tcase_add_test(tc_core, test_sw_affine_double_encoded_vtable_88gencore);
 	tcase_add_test(tc_core, test_sw_affine_double_encoded_vtable_87swipe);
 	tcase_add_test(tc_core, test_sw_affine_double_encoded_vtable_88);
 	tcase_add_test(tc_core, test_sw_affine_double_encoded_vtable_195swipe);

@@ -69,7 +69,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -114,6 +117,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\gss.c" />
+    <ClCompile Include="..\..\sw\gc_sw.c" />
     <ClCompile Include="..\..\sw\lal_encoding.c" />
     <ClCompile Include="..\..\sw\lal_scoring_matrix.c" />
     <ClCompile Include="..\..\sw\lal_matrix.c" />
@@ -121,6 +125,7 @@
     <ClCompile Include="..\..\sw\sw.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sw\gc_sw.h" />
     <ClInclude Include="..\..\sw\lal_encoding.h" />
     <ClInclude Include="..\..\sw\lal_matrix.h" />
     <ClInclude Include="..\..\sw\lal_report.h" />
