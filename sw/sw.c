@@ -50,7 +50,7 @@ double sw_constant_gap_double(const search_swcg_profile_t * sp, const sequence_t
 	}
 
 	element_t score = find_max(&score_mat);
-	print_matrix(&score_mat);
+//	print_matrix(&score_mat);
 	free_matrix(&score_mat);
 	return score.d;
 }
