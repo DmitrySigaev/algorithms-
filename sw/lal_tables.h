@@ -14,6 +14,7 @@ extern const unsigned char lal_encode31[];
 */
 
 extern const char cns[31];
+extern const char lal_revers31_s[256];
 extern const char lal_decode31_s[31];
 extern char identity_nuc[];
 extern char blosum100[];
