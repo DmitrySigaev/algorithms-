@@ -32,3 +32,12 @@ void seq2encodedseq(sequence_t inseq, sequence_t enseq, const char* encode) {
 	}
 	enseq.seq[enseq.len] = LAL_NONEXISTENT;
 }
+
+void lal_reverse(const char * source, int len, char *dest, const char *reverse_tab)
+{
+	char *ptmp;
+	if (len <= 0) return;
+	ptmp = dest + (len - 1);
+	while (len--)
+		*ptmp-- = reverse_tab[*source++];
+}
