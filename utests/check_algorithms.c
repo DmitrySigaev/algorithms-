@@ -15,6 +15,7 @@ Suite* algorithms_suite(void)
 	Suite *s = suite_create("algorithms");
 
 	/* Core test case */
+	addEncodingTC(s);
 	addGSSTC(s);
 	addSWTC(s);
 	addScoringMatrixTC(s);
