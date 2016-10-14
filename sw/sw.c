@@ -160,7 +160,6 @@ double sw_affine_gap(const search_swag_profile_t * sp, const sequence_t * dseq, 
 	return score.d;
 }
 
-
 region_t sw_alignment_swipe(const search_swag_profile_t * sp, const sequence_t *xseq, const sequence_t *yseq) {
 	region_t region;
 	double score = 0; /* score of direct path*/
@@ -197,7 +196,7 @@ region_t sw_alignment_swipe(const search_swag_profile_t * sp, const sequence_t *
 			HH[j] = h;
 			if (h > score) {
 				score = h;
-				region.dscore = score;
+				region.fdscore = score;
 				region.x_f = j;
 				region.y_f = i;
 			}
@@ -237,7 +236,7 @@ region_t sw_alignment_swipe(const search_swag_profile_t * sp, const sequence_t *
 				region.x_s = bj;
 				region.y_s = bi;
 				if (nick >= score) {
-					region.dscore = nick;
+					region.bdscore = nick;
 					free(EE);
 					free(HH);
 					return region;
@@ -248,6 +247,6 @@ region_t sw_alignment_swipe(const search_swag_profile_t * sp, const sequence_t *
 	report_warning("check in align function.");
 	free(EE);
 	free(HH);
-	return (region_t) { 0, 0, 0, 0, 0 };
+	return (region_t) { 0, 0, 0, 0, 0, 0 };
 
 }

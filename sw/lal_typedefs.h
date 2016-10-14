@@ -65,8 +65,12 @@ typedef struct {
 	size_t y_s; /* y - top position or start   */
 	size_t y_f; /* y - bottom position or finish */
 	union {
-		size_t score;
-		double dscore;
+		size_t fscore;
+		double fdscore;
+	};
+	union {
+		size_t bscore;
+		double bdscore;
 	};
 } region_t;
 

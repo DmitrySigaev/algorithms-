@@ -183,7 +183,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_195swipe)
 	seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
-	ck_assert_int_eq((int)score.dscore, 195); /* Max score */
+	ck_assert_int_eq((int)score.fdscore, 195); /* Max forward score */
+	ck_assert_int_eq((int)score.bdscore, 195); /* Max backward score */
 }END_TEST
 
 START_TEST(test_sw_affine_double_encoded_vtable_195gencore)
@@ -244,7 +245,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_87swipe)
 	seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
-	ck_assert_int_eq((int)score.dscore, 87); /* Max score */
+	ck_assert_int_eq((int)score.fdscore, 87); /* Max forward score */
+	ck_assert_int_eq((int)score.bdscore, 87); /* Max backward score */
 }END_TEST
 
 
@@ -356,7 +358,8 @@ START_TEST(test_sw_gaptest1_261_90swipe)
 	seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
-	ck_assert_int_eq((int)score.dscore, 90); /* Max score */ // המכהום בûעü 89
+	ck_assert_int_eq((int)score.fdscore, 89); /* Max forward score */ 
+	ck_assert_int_eq((int)score.bdscore, 90); /* Max backward score */ // המכהום בûעü 89??
 
 	sequence_t reverse1 = { 3, malloc(len1 + 1), len1 };
 	for (size_t i = 0; i < enseq1.len; i++) {
@@ -364,7 +367,8 @@ START_TEST(test_sw_gaptest1_261_90swipe)
 		reverse1.seq[i] = cns[(int)(enseq1.seq[enseq1.len - 1 - i])];
 	}
 	score = sw_alignment_swipe(&sp, &reverse1, &enseq2);
-	ck_assert_int_eq((int)score.dscore, 193); /* Max score */
+	ck_assert_int_eq((int)score.fdscore, 193); /* Max forward score */
+	ck_assert_int_eq((int)score.bdscore, 193); /* Max backward score */
 }END_TEST
 
 // 0x04c9ef2c "CTTCCTACGTTGGGTCATAGTAGTGCGGCGTGGGCAATGCCTACGGAGGGGTGGAGCAACTGGCGCTATCACTTCTACCATCGTCTGCAGCGTACGA" //290
@@ -439,7 +443,8 @@ START_TEST(test_sw_gaptest1_290_91_194swipe)
 	seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
-	ck_assert_int_eq((int)score.dscore, 91); /* Max score */ // המכהום בûעü 89
+	ck_assert_int_eq((int)score.fdscore, 90); /* Max forward score */ // ok
+	ck_assert_int_eq((int)score.bdscore, 91); /* Max backward score */ // should it be equil to 90 ??
 
 	sequence_t reverse1 = { 3, malloc(len1 + 1), len1 };
 	for (size_t i = 0; i < enseq1.len; i++) {
@@ -447,7 +452,8 @@ START_TEST(test_sw_gaptest1_290_91_194swipe)
 		reverse1.seq[i] = cns[(int)(enseq1.seq[enseq1.len - 1 - i])];
 	}
 	score = sw_alignment_swipe(&sp, &reverse1, &enseq2);
-	ck_assert_int_eq((int)score.dscore, 194); /* Max score */
+	ck_assert_int_eq((int)score.fdscore, 194); /* Max forward score */
+	ck_assert_int_eq((int)score.bdscore, 194); /* Max backward score */
 }END_TEST
 
 START_TEST(test_sw_gaptest1_290_76_194constant)
