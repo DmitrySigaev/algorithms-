@@ -113,9 +113,12 @@ double sw_affine_gap(const search_swag_profile_t * sp, const sequence_t * dseq, 
 	double d_last, u_last, l_last, e_last, f_last;
 	double d_new, u_new, l_new, e_new, f_new;
 	double v;
-	matrix_t score_mat = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE);
-	matrix_t ee = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE);
-	matrix_t ff = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE);
+	matrix_t score_mat = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE); // todo: there is a bug. we have to use calloc instead of malloc 
+	matrix_t ee = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE);        // todo: there is a bug. we have to use calloc instead of malloc 
+	matrix_t ff = matrix(dseq->len + 1, qseq->len + 1, DOUBLETYPE);        // todo: there is a bug. we have to use calloc instead of malloc 
+	if (!score_mat.ddata) return 0.0;
+	if (!ee.ddata) { free_matrix(&score_mat); return 0.0; }
+	if (!ff.ddata) { free_matrix(&ee); return 0.0; }
 
 	for (size_t i = 0; i <= dseq->len; i++) {
 		for (size_t j = 0; j <= qseq->len; j++) {
