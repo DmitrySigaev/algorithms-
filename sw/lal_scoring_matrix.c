@@ -258,8 +258,8 @@ int read_scoring_matrix(scoring_matrix_t *mtx, const char *matrixstring, size_t 
 	mtx->scale = 1.0;
 	mtx->scaleback = 1.0;
 
-	matrix_set_value(&mtx->sc_double_matrix, (element_t) { 0, DOUBLETYPE });
-	matrix_set_value(&mtx->sc_int_matrix, (element_t) { 0, INTTYPE });
+	matrix_set(&mtx->sc_double_matrix, (element_t) { 0, DOUBLETYPE });
+	matrix_set(&mtx->sc_int_matrix, (element_t) { 0, INTTYPE });
 
 	if (!read_docs(mtx, &desc)) {
 		report_warning("docs not found");
