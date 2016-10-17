@@ -74,4 +74,8 @@ typedef struct {
 	};
 } region_t;
 
+typedef struct tag_score_matrix {
+	matrix_t score;
+	matrix_t directions;
+} score_matrix_t;
 #endif /* _LAL_TYPEDEFS_H_ */
