@@ -6,6 +6,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 
 #include <stdio.h>
 #include <malloc.h>
+#include <string.h>
 #include "lal_matrix.h"
 #include "lal_report.h"
 #include "sw.h"
@@ -50,7 +51,7 @@ double sw_constant_gap_double(const search_swcg_profile_t * sp, const sequence_t
 	}
 
 	element_t score = find_max(&score_mat);
-//	print_matrix(&score_mat);
+	//	print_matrix(&score_mat);
 	free_matrix(&score_mat);
 	return score.d;
 }
@@ -92,7 +93,7 @@ int64_t sw_constant_gap_int(const search_swcg_profile_int_t * sp, const sequence
 	}
 
 	element_t score = find_max(&score_mat);
-//	print_matrix(&score_mat);
+	//	print_matrix(&score_mat);
 	free_matrix(&score_mat);
 	return score.i;
 }
@@ -154,9 +155,9 @@ double sw_affine_gap(const search_swag_profile_t * sp, const sequence_t * dseq, 
 	}
 
 	element_t score = find_max(&score_mat);
-//	print_matrix(&score_mat);
-//	print_matrix(&ee);
-//	print_matrix(&ff);
+	//	print_matrix(&score_mat);
+	//	print_matrix(&ee);
+	//	print_matrix(&ff);
 	free_matrix(&score_mat);
 	free_matrix(&ee);
 	free_matrix(&ff);
@@ -251,5 +252,99 @@ region_t sw_alignment_swipe(const search_swag_profile_t * sp, const sequence_t *
 	free(EE);
 	free(HH);
 	return (region_t) { 0, 0, 0, 0, 0, 0 };
+}
 
+#define LAL_MASK_MISMATCH      (1<<0)
+#define LAL_MASK_MATCH         (1<<1)
+#define LAL_MASK_GAP_OPEN_UP   (1<<2)
+#define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+#define LAL_MASK_GAP_EXT_UP    (1<<4)
+#define LAL_MASK_GAP_EXT_LEFT  (1<<5)
+
+
+score_matrix_t sw_directions(const search_swag_profile_t * sp, const sequence_t *xseq, const sequence_t *yseq) {
+	double h; /* current value */
+	double n; /* diagonally previous value */
+	double e; /* value in left cell */
+	double f; /* value in upper cell */
+	double * scoprev_upprev = malloc(2 * xseq->len * sizeof(double)); /* scoprev_upprev holds in the first column the scores of the previous column and in the second column the gap-values of the previous column */
+	double *su_p; /* pointer to element of scoprev_upprev */
+	matrix_t score_mat = matrix(yseq->len + 1, xseq->len + 1, DOUBLETYPE); // todo: there is a bug. we have to use calloc instead of malloc 
+	matrix_t directions_mat = matrix(yseq->len, xseq->len, CHARTYPE); /* */
+	if (!score_mat.ddata) return (score_matrix_t) { 0, 0 };
+	if (!directions_mat.ddata) { free_matrix(&score_mat); return (score_matrix_t) { 0, 0 }; }
+
+	matrix_set(&score_mat, (element_t) { 0, DOUBLETYPE });
+	matrix_set(&directions_mat, (element_t) { 0, CHARTYPE });
+
+	memset(scoprev_upprev, 0, 2 * xseq->len * sizeof(double));
+
+	for (size_t j = 0; j < yseq->len; j++) {
+		su_p = scoprev_upprev;
+		f = 0;   /* value in first upper cell */
+		h = 0;   /* value in first cell of line */
+
+		for (size_t i = 0; i < xseq->len; i++) {
+			element_t el_direction = (element_t) { 0, CHARTYPE };
+			element_t el_score = (element_t) { 0, DOUBLETYPE };
+			double v;
+			n = *su_p;
+			e = *(su_p + 1);
+			el_direction.c = (yseq->seq[j] == xseq->seq[i]) ? (LAL_MASK_MATCH) : (LAL_MASK_MISMATCH);
+			if (!sp->mtx) {
+				v = SCORE(yseq->seq[j], xseq->seq[i], 1.0, -1.0);
+			}
+			else {
+				v = VDTABLE(yseq->seq[j], xseq->seq[i]);
+			}
+
+			h += v;
+
+			/* stow for gap opening */
+			if (f > h) {
+				el_direction.c |= LAL_MASK_GAP_OPEN_UP;
+				h = f;
+			}
+			if (e > h) {
+				h = e;
+				el_direction.c |= LAL_MASK_GAP_OPEN_LEFT;
+			}
+			if (h < 0) {
+				h = 0;
+			}
+
+			*su_p = h;
+
+			/* stow for gap extensions */
+			h += sp->gapOpen + sp->gapExt;
+			e += sp->gapExt;
+			f += sp->gapExt;
+
+			if (f > h) {
+				el_direction.c = LAL_MASK_GAP_EXT_UP;
+			}
+			else {
+				f = h;
+			}
+
+			if (e > h) {
+				el_direction.c |= LAL_MASK_GAP_EXT_LEFT;
+			}
+			else {
+				e = h;
+			}
+			matrix_or_bitwise(&directions_mat, j, i, el_direction); /*can be changed on set_value method*/
+			el_score.d = h;
+			matrix_set_value(&score_mat, j, i, el_score);
+
+			/* next round of swapping */
+			*(su_p + 1) = e;
+			h = n;
+			su_p += 2;
+		}
+	}
+
+	free(scoprev_upprev);
+
+	return (score_matrix_t){ score_mat, directions_mat };
 }
