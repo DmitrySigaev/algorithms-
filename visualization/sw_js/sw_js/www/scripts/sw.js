@@ -50,7 +50,7 @@ var sw_constant_gap = function (s1, s2, match, mismatch, gap) {
             trace_mat[i][j] = trace;
         }
     }
-    console.log(score_mat);
+    /* console.log(score_mat); */
     var mscore = 0;
     for (i = 0; i < l1; ++i) {
         for (j = 0; j < l2; ++j) {
@@ -58,7 +58,7 @@ var sw_constant_gap = function (s1, s2, match, mismatch, gap) {
                 mscore = score_mat[i][j];
         }
     }
-    console.log(mscore);
+    /* console.log(mscore); */
 
     return [mscore, score_mat, trace_mat];
 }
@@ -76,5 +76,5 @@ function CalculateSWandDraw(seq_1, seq_2, match, misMatch, gapOpen, gapExt) {
     var ncol = sequence_2.length;
 
     ret = sw_constant_gap(sequence_1, sequence_1, 1.0, -1.0, -1.0);
-    console.log(ret[0] == 4);
+    console.log('max score: ' + ret[0]);
 }
