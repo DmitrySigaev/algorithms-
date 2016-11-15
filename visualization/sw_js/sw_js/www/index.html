@@ -33,12 +33,11 @@
                     <tr>
                         <td>Score Matrix</td>
                         <td>
-                            <!-- The datalist is just an auto-complete list to be used with a textual input element. If you want to pre-set a value, just set the value of the input: -->
-                            <input list="matrix_list" value="identityNuc" id="matrix_ident">
-                                 <datalist id="matrix_list">
-                                     <option value="Simple">
-                                     <option value="identityNuc">
-                                 </datalist>
+                            <!-- If you want to always select a value from a list, you can use a select element. This allows marking one option as selected, but it doesn't allow freeform input: -->
+                            <select id="matrix_ident" name="SubstitutionalMatrix" style="width:300px;">
+                                <option selected value="identityNuc">identity_nuc - sub matrix</option>
+                                <option value="Simple">simple match/mismatch scoring scheme</option>
+                            </select>
                         </td>
                         <td></td>
                     </tr>
