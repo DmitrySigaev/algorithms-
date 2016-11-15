@@ -22,6 +22,7 @@
                     <tr>
                         <td>Sequence 1</td>
                         <td><input type="text" id="seq_1" value="CAACTTCCTGGCGCTATCACTTCTACCATCGTCTGCAGCGT" /></td>
+                                                                 
                         <td><input name="Submit" type="submit" value="Start Smith-Waterman" /></td>
                     </tr>
                     <tr>
@@ -32,17 +33,18 @@
                     <tr>
                         <td>Score Matrix</td>
                         <td>
-                            <input list="matrix_list" id="matrix_ident">
+                            <!-- The datalist is just an auto-complete list to be used with a textual input element. If you want to pre-set a value, just set the value of the input: -->
+                            <input list="matrix_list" value="identityNuc" id="matrix_ident">
                                  <datalist id="matrix_list">
-                                     <option value="Simple">simple match/mismatch scoring scheme</option>
-                                     <option value="identityNuc">identity_nuc</option>
+                                     <option value="Simple">
+                                     <option value="identityNuc">
                                  </datalist>
                         </td>
                         <td></td>
                     </tr>
                     <tr>
                         <td>The penalty for Opening a gap</td>
-                        <td><input type="text" id="gapOpen" value="-2" /></td>
+                        <td><input type="text" id="gapOpen" value="-1" /></td>
                         <td></td>
                     </tr>
                     <tr>
