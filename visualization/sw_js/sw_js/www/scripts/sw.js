@@ -17,11 +17,11 @@ var Matrix = function (rows, cols) {
   This model assigns a score of +1 and -1 respectively if a match or a mismatch occurs,
   whereas a value equal to -d in case of gaps (insertions or deletions).
 */
-var score = function (search_profile, x, y) {
+var score = function (substitution, x, y) {
     if (x.toUpperCase() == y.toUpperCase()) {
-        return search_profile.match || 1;
+        return substitution.match || 1;
     } else {
-        return search_profile.mismatch || -1;
+        return substitution.mismatch || -1;
     }
 };
 
@@ -39,7 +39,7 @@ the possibility to evaluate with different scores gaps of different sizes;
 
 var sw_linear_gap = function (search_profile, s1, s2) {
     var gap = search_profile.gap || -1;
-    var substitution_function = search_profile.S || score;
+    var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
     var l1 = s1.length;
     var l2 = s2.length;
     var score_mat = Matrix(l1, l2);
@@ -60,7 +60,7 @@ var sw_linear_gap = function (search_profile, s1, s2) {
                 var u_last = score_mat[i - 1][j];
                 var l_last = score_mat[i][j - 1];
             }
-            var d_new = d_last + substitution_function(search_profile, s1[i], s2[j]);
+            var d_new = d_last + substitution.method(substitution, s1[i], s2[j]);
             var u_new = u_last + gap;
             var l_new = l_last + gap;
             score_mat[i][j] = Math.max(d_new, u_new, l_new, 0);
@@ -85,12 +85,12 @@ var sw_linear_gap = function (search_profile, s1, s2) {
 function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
     var sequence_1 = seq_1.split(" ");
     var sequence_2 = seq_2.split(" ");
-    var subtitution = { subfun: score, match: 1.0, mismatch: -1.0 }
+    var subtitution = { method: score, match: 1.0, mismatch: -1.0 }; /* define Match/Mismatch Scoring model */
     /* Append dash in beginning for first row / column */
     sequence_1 = ["-"].concat(sequence_1);
     sequence_2 = ["-"].concat(sequence_2);
 
-    var search_profile = { S: score, match: 1.0, mismatch: -1.0, gap: -1.0 };
+    var search_profile = { S: subtitution, gap: -1.0 }; /*define search profile*/
     ret = sw_linear_gap(search_profile, sequence_1, sequence_2);
     console.log('max score: ' + ret[0]);
 }
