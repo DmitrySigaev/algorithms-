@@ -244,6 +244,68 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
     return [mscore, score_mat, trace_mat];
 }
 
+/*
+   Yet another the Smith-Waterman algorithm implementation, which is described in:
+   http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf
+*/
+var sw_affine_gap_v2 = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
+    var gapOpen = search_profile.gapOpen || -1;
+    var gapExt = search_profile.gapExt || 0;
+    var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+    var l1 = dseq.length;
+    var l2 = qseq.length;
+    var score_mat = Matrix(l1, l2);
+    var trace_mat = Matrix(l1, l2);
+    var ee = Matrix(l1, l2);
+    var ff = Matrix(l1, l2);
+
+    for (i = 0; i < l1; ++i) {
+
+        for (j = 0; j < l2; ++j) {
+
+            /* initialization in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+            if (i == 0 || j == 0) { /**/
+                if (i == 0)
+                    ee[i][j] = 0;
+                if (j == 0)
+                    ff[i][j] = 0;
+                score_mat[i][j] = 0;
+                trace_mat[i][j] = 3;
+                continue;
+
+            } else {
+                var ey_last = ee[i][j - 1];
+                var fx_last = ff[i - 1][j];
+                var m_last = score_mat[i - 1][j - 1];
+                var mx_last = score_mat[i - 1][j];
+                var my_last = score_mat[i][j - 1];
+            }
+            var s = substitution.method(substitution, dseq[i], qseq[j]);  /* Substitutional Matrix */
+            var m_new = m_last + s;
+            var mx_new = mx_last + gapOpen; /* */
+            var my_new = my_last + gapOpen;
+            ee[i][j] = Math.max(ey_last + gapExt, my_new, 0);
+            ff[i][j] = Math.max(fx_last + gapExt, mx_new, 0);
+
+            score_mat[i][j] = Math.max(m_new, /*y*/ee[i - 1][j - 1] + s, /*x*/ff[i - 1][j - 1] + s, 0);
+            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+            var trace = arr.indexOf(Math.max.apply(Math, arr));
+            trace_mat[i][j] = trace;
+        }
+    }
+    /* console.log(score_mat); */
+    var mscore = score_mat[0][0];
+    for (i = 0; i < l1; ++i) {
+        for (j = 0; j < l2; ++j) {
+            if (mscore < score_mat[i][j])
+                mscore = score_mat[i][j];
+        }
+    }
+    /* console.log(mscore); */
+
+    return [mscore, score_mat, trace_mat];
+}
+
 function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
     var sequence_1 = seq_1.split(" ");
     var sequence_2 = seq_2.split(" ");
@@ -265,4 +327,8 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
     var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
     ret = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
     console.log('max score of v1: ' + ret[0]);
+
+    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
+    console.log('max score of v2: ' + ret[0]);
 }
