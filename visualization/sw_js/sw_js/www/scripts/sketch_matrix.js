@@ -64,8 +64,43 @@ var getMaxSymbolsSize = function (sequence, font, fontSize) {
 
 }
 
-function sketch_matrixes(object_alignment) {
-	var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
-	console.log(symSize);
+var setSvgArea = function (yseq, xseq, symSize) {
+	/* Number of rows and columns */
+	var nrows = yseq.length;
+	var ncols = xseq.length;
+	var containerWidth = parseFloat(d3.select('#main_frame').style("width"));
+
+	var visualWidth = 0.8 * containerWidth;
+	var size = 0.8 * visualWidth;
+
+	if (nrows == ncols) {
+		var w = size;
+		var h = size;
+	} else if (nrows > ncols) {
+		var h = size;
+		var w = size * ncols / nrows;
+	} else if (nrows < ncols) {
+		var w = size;
+		var h = size * nrows / ncols;
+	}
+
+	var left_margin = 1.1 * Math.max(symSize.w, symSize.h); /*can contains size of string box instead of symbol box */
+	var top_margin = left_margin;
+	/* calculte sixe of cell */
+	var cell_width = (w - left_margin) / ncols;
+	var cell_height = (h - top_margin) / nrows;
+
+	/* Padding between matix cells */
+	var padding = 0.05;
+	var row_padding = padding * cell_height
+	var col_padding = padding * cell_width;
+	var color = "blue";
+	return { svg: { w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color } };
 }
+
+function sketch_matrixes(object_alignment) {
+		var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
+		var svgArea = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
+		console.log(svgArea);
+	}
 
