@@ -99,8 +99,36 @@ var setSvgArea = function (yseq, xseq, symSize) {
 }
 
 function sketch_matrixes(object_alignment) {
-		var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
-		var svgArea = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
-		console.log(svgArea);
+	var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
+	var svgArea = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
+	console.log(svgArea);
+	// Calculate the matrix. Imported from sw.js
+
+	var score_mat = object_alignment.scorematrix;
+	var trace_mat = object_alignment.directions;
+
+
+	var data = new Array();
+	var c = 0;
+	var max_score = 0;
+	for (i = 0; i < object_alignment.seq1.length; i++) { /* var nrows = yseq.length = object_alignment.seq1.length */
+		for (j = 0; j < object_alignment.seq2.length; j++) { /* var ncols = xseq.length = object_alignment.seq2 */
+			/* get max score for color gradient scaling */
+			if (score_mat[i][j] > max_score) {
+				max_score = score_mat[i][j];
+			}
+			/* Store all relevant data in json object array in order to append to DOMS in d3 */
+			var dom = {
+				"score": score_mat[i][j],
+				"trace": trace_mat[i][j],
+				"status": [1, 1, 1, 1, 1, 1, 1],
+				"active": false,
+				"counter": c
+			}
+			data.push(dom)
+			c = c + 1;
+		}
 	}
+	console.log(data);
+}
 
