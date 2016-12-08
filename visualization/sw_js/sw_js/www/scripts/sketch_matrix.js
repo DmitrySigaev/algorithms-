@@ -95,13 +95,121 @@ var setSvgArea = function (yseq, xseq, symSize) {
 	var row_padding = padding * cell_height
 	var col_padding = padding * cell_width;
 	var color = "blue";
-	return { svg: { w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color } };
+	return { svg: { nrow: nrows, ncol: ncols, w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color } };
 }
+
+/* 
+ Get the coordinates of the upper left corner of a cell from the cell index. 
+ Sequentially indexed row by row
+ */
+var get_cell_coord = function (sa, i, coord) {
+	var col = i % sa.svg.nrow;
+	var row = Math.floor((i / sa.svg.ncol));
+	if (coord == 0 || coord == 2 /*"x" */) {
+		var returnValue = col * sa.cell.w + sa.cell.padding.col + sa.svg.margin.left;
+	} else if (coord == 1 || coord == 3/* "y" */) {
+		var returnValue = row * sa.cell.h + sa.cell.padding.row + sa.svg.margin.top;
+	}
+	return returnValue;
+}
+
+/* Get the endpoint of a trace line depending on the trace */
+function get_line_coord(sa, d, i, coord) {
+	var halfCellPadW = sa.cell.padding.col + 0.5 * (sa.cell.w - sa.cell.padding.col);
+	var halfCellPadH = sa.cell.padding.row + 0.5 * (sa.cell.h - sa.cell.padding.row);
+
+	var additoin = [/*zero      (0 << 0)*/[0.0, 0.0, 0.0, 0.0],
+					/*misdig    (1 << 0)*/[0.0, 0.0, 0.6 * halfCellPadW, 0.6 * halfCellPadH],
+					/*diag_dir  (1 << 1)*/[0.0, 0.0, 0.6 * halfCellPadW, 0.6 * halfCellPadH],
+					/*up_dir    (1 << 2)*/[halfCellPadW, 0.0, halfCellPadW, 0.6 * halfCellPadH],
+					/*left_dir  (1 << 3)*/[0.0, halfCellPadH, 0.6 * halfCellPadW, halfCellPadH],
+					/*up_dir_e  (1 << 4)*/[halfCellPadW, 0.0, halfCellPadW, 0.6 * halfCellPadH],
+					/*left_dir_e(1 << 5)*/[0.0, halfCellPadH, 0.6 * halfCellPadW, halfCellPadH],
+					/*zero_dir  (1 << 6)*/[0.0, 0.0, 0.0, 0.0]];
+
+	for (var sh = 0; sh <= 6; sh++) {
+		if (!!(d['trace'] & (1 << sh)) && d['status'][sh] == 1) {
+			if (coord == 3)
+				d['status'][sh] = 0;
+			return get_cell_coord(sa, i, coord) + additoin[sh + 1][coord];
+		}
+		else
+			d['status'][sh] = 0;
+	}
+	return get_cell_coord(sa, i, coord);
+}
+
+/* redraw trace line */
+var redraw = function (sa, matrix) {
+	matrix.selectAll("g")
+				 .append("line")
+				 .attr("x1", function (d, i) { return get_line_coord(sa, d, i, 0); })
+				 .attr("y1", function (d, i) { return get_line_coord(sa, d, i, 1); })
+				 .attr("x2", function (d, i) { return get_line_coord(sa, d, i, 2); })
+				 .attr("y2", function (d, i) { return get_line_coord(sa, d, i, 3); })
+				 .attr("stroke-width", 1)
+				 .attr("stroke", function (d, i) {
+				 	if (d['trace'] > 0)
+				 		console.log('');
+				 	//Don't draw a trace line if the score is zero or the choice was zero
+				 	if (!!(d['trace'] & 15)) {
+				 		if (!!(d['trace'] & 3) && !!(d['trace'] & upp))
+				 			return "blue";
+				 		if (!!(d['trace'] & upp) && !!(d['trace'] & lef))
+				 			return "yellow";
+				 		else
+				 			return "none";
+				 	} else {
+				 		return "none";
+				 	}
+				 });
+}
+/* Draw trace line */
+var DrawTraceLine = function (sa, matrix, data) {
+	matrix.selectAll("g")
+	.data(data)
+	.enter()
+	.append("g")
+	.append("line")
+	.attr("x1", function (d, i) {
+		return get_line_coord(sa, d, i, 0);
+	})
+	.attr("y1", function (d, i) {
+		return get_line_coord(sa, d, i, 1);
+	})
+	.attr("x2", function (d, i) {
+		return get_line_coord(sa, d, i, 2);
+	})
+	.attr("y2", function (d, i) {
+		return get_line_coord(sa, d, i, 3);
+	})
+	.attr("stroke-width", 1)
+	.attr("stroke", function (d, i) {
+		if (d['trace'] > 0)
+			console.log('');
+		/* Don't draw a trace line if the score is zero or the choice was zero */
+		if (!!(d['trace'] & 15)) {
+			if (!!(d['trace'] & 1))
+				return "red";
+			if (!!(d['trace'] & 2))
+				return "green";
+			if (!!(d['trace'] & upp))
+				return "grey";
+			else
+				return "black";
+		} else {
+			return "none";
+		}
+	});
+	redraw(sa, matrix);
+	redraw(sa, matrix);
+}
+
 
 function sketch_matrixes(object_alignment) {
 	var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
-	var svgArea = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
-	console.log(svgArea);
+	var sa = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
+	console.log(sa);
 	// Calculate the matrix. Imported from sw.js
 
 	var score_mat = object_alignment.scorematrix;
@@ -111,8 +219,8 @@ function sketch_matrixes(object_alignment) {
 	var data = new Array();
 	var c = 0;
 	var max_score = 0;
-	for (i = 0; i < object_alignment.seq1.length; i++) { /* var nrows = yseq.length = object_alignment.seq1.length */
-		for (j = 0; j < object_alignment.seq2.length; j++) { /* var ncols = xseq.length = object_alignment.seq2 */
+	for (i = 0; i < sa.svg.nrow; i++) { /* var nrows = yseq.length = object_alignment.seq1.length */
+		for (j = 0; j < sa.svg.ncol; j++) { /* var ncols = xseq.length = object_alignment.seq2 */
 			/* get max score for color gradient scaling */
 			if (score_mat[i][j] > max_score) {
 				max_score = score_mat[i][j];
@@ -130,5 +238,14 @@ function sketch_matrixes(object_alignment) {
 		}
 	}
 	console.log(data);
+
+	/* Create SVG matrix element */
+	var scoreMatrix = d3.select("#main_frame")
+						.append("svg")
+						.attr("width", sa.svg.w)
+						.attr("height", sa.svg.h);
+	/* Draw trace line */
+	DrawTraceLine(sa, scoreMatrix, data);
+
 }
 
