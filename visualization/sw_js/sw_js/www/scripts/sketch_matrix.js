@@ -95,7 +95,7 @@ var setSvgArea = function (yseq, xseq, symSize) {
 	var row_padding = padding * cell_height
 	var col_padding = padding * cell_width;
 	var color = "blue";
-	return { svg: { nrow: nrows, ncol: ncols, w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color } };
+	return { svg: { nrow: nrows, ncol: ncols, w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color }, symbol: symSize };
 }
 
 /* 
@@ -206,6 +206,28 @@ var DrawTraceLine = function (sa, matrix, data) {
 }
 
 
+/* Draw the scores */
+var DrawScores = function (sa, matrix) {
+	var halfCellPadW = sa.cell.padding.col + 0.5 * (sa.cell.w - sa.cell.padding.col);
+	var halfCellPadH = sa.cell.padding.row + 0.5 * (sa.cell.h - sa.cell.padding.row);
+
+	matrix.selectAll("g")
+		.append("text")
+		.text(function (d, i) { return d["score"]; })
+		.attr("x", function (d, i) {
+			var out = get_cell_coord(sa, i, 0) + halfCellPadW - 0.2 * sa.symbol.font_size;
+			return out;
+		})
+		.attr("y", function (d, i) {
+			var out = get_cell_coord(sa, i, 1) + halfCellPadH + 0.2 * sa.symbol.font_size;
+			return out;
+		})
+		.style("text-anchor", "middle")
+		.style("font-size", 0.3 * sa.cell.w)
+		.attr("font-family", "Arial")
+		.style("fill", "grey");
+}
+
 function sketch_matrixes(object_alignment) {
 	var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
 	var sa = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
@@ -246,6 +268,8 @@ function sketch_matrixes(object_alignment) {
 						.attr("height", sa.svg.h);
 	/* Draw trace line */
 	DrawTraceLine(sa, scoreMatrix, data);
+	/* Draw the scores */
+	DrawScores(sa, scoreMatrix);
 
 }
 
