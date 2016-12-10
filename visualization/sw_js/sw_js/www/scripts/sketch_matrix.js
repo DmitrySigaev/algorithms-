@@ -230,13 +230,13 @@ var DrawScores = function (sa, matrix) {
 
 /* Draw the row names */
 var DrawRowNames = function (sa, matrix, yseqence) {
-	var row_names = matrix.selectAll("text.row")
+	var names = matrix.selectAll("text.row")
 		.data(yseqence)
 		.enter()
 		.append("g")
 		.append("text");
 
-	row_names.text(function (d) { return d; })
+	names.text(function (d) { return d; })
 		.attr("y", function (d, i) {
 			var out = sa.svg.margin.top + 0.5 * sa.cell.h + i * sa.cell.h + sa.cell.padding.row;
 			return out;
@@ -249,6 +249,27 @@ var DrawRowNames = function (sa, matrix, yseqence) {
 		.style("font-size", Math.min(0.3 * sa.cell.h, sa.symbol.font_size));
 }
 
+/* Draw the column names */
+var DrawColNames = function (sa, matrix, xseqence) {
+	var names = matrix.selectAll("text.col")
+		.data(xseqence)
+		.enter()
+		.append("g")
+		.append("text");
+
+	names.text(function (d) { return d; })
+		.attr("x", function (d, i) {
+			var out = sa.svg.margin.left + 0.5 * sa.cell.w + i * sa.cell.w + sa.cell.padding.col;
+			return out;
+		})
+		.attr("y", 0)
+		.attr("id", function (d, i) { return "col_" + i; })
+		.style("text-anchor", "left")
+		.style("writing-mode", "vertical-rl")
+		.style("fill", "black")
+		.attr("font-family", sa.symbol.font)
+		.style("font-size", Math.min(0.3 * sa.cell.h, sa.symbol.font_size));
+}
 function sketch_matrixes(object_alignment) {
 	var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
 	var sa = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
@@ -292,5 +313,6 @@ function sketch_matrixes(object_alignment) {
 	/* Draw the scores */
 	DrawScores(sa, scoreMatrix);
 	DrawRowNames(sa, scoreMatrix, object_alignment.seq1);
+	DrawColNames(sa, scoreMatrix, object_alignment.seq2);
 }
 
