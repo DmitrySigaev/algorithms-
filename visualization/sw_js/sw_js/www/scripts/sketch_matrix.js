@@ -164,6 +164,7 @@ var redraw = function (sa, matrix) {
 				 	}
 				 });
 }
+
 /* Draw trace line */
 var DrawTraceLine = function (sa, matrix, data) {
 	matrix.selectAll("g")
@@ -205,7 +206,6 @@ var DrawTraceLine = function (sa, matrix, data) {
 	redraw(sa, matrix);
 }
 
-
 /* Draw the scores */
 var DrawScores = function (sa, matrix) {
 	var halfCellPadW = sa.cell.padding.col + 0.5 * (sa.cell.w - sa.cell.padding.col);
@@ -226,6 +226,27 @@ var DrawScores = function (sa, matrix) {
 		.style("font-size", 0.3 * sa.cell.w)
 		.attr("font-family", "Arial")
 		.style("fill", "grey");
+}
+
+/* Draw the row names */
+var DrawRowNames = function (sa, matrix, yseqence) {
+	var row_names = matrix.selectAll("text.row")
+		.data(yseqence)
+		.enter()
+		.append("g")
+		.append("text");
+
+	row_names.text(function (d) { return d; })
+		.attr("y", function (d, i) {
+			var out = sa.svg.margin.top + 0.5 * sa.cell.h + i * sa.cell.h + sa.cell.padding.row;
+			return out;
+		})
+		.attr("x", 0)
+		.attr("id", function (d, i) { return "row_" + i; })
+		.style("text-anchor", "right")
+		.style("fill", "black")
+		.attr("font-family", sa.symbol.font)
+		.style("font-size", Math.min(0.3 * sa.cell.h, sa.symbol.font_size));
 }
 
 function sketch_matrixes(object_alignment) {
@@ -270,6 +291,6 @@ function sketch_matrixes(object_alignment) {
 	DrawTraceLine(sa, scoreMatrix, data);
 	/* Draw the scores */
 	DrawScores(sa, scoreMatrix);
-
+	DrawRowNames(sa, scoreMatrix, object_alignment.seq1);
 }
 
