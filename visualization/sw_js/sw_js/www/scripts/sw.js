@@ -6,11 +6,12 @@
 
 /* Create empty matrix */
 var Matrix = function (rows, cols) {
-    var arr = [], row = [];
-    while (cols--) row.push(0);
-    while (rows--) arr.push(row.slice());
-    return arr;
+	var arr = [], row = [];
+	while (cols--) row.push(0);
+	while (rows--) arr.push(row.slice());
+	return arr;
 };
+
 
 /*
   Match/Mismatch Scoring model
@@ -18,40 +19,49 @@ var Matrix = function (rows, cols) {
   whereas a value equal to -d in case of gaps (insertions or deletions).
 */
 var score = function (substitution, x, y) {
-    if (x.toUpperCase() == y.toUpperCase()) {
-        return substitution.match || 1;
-    } else {
-        return substitution.mismatch || -1;
-    }
+	if (x.toUpperCase() == y.toUpperCase()) {
+		return substitution.match || 1;
+	} else {
+		return substitution.mismatch || -1;
+	}
 };
 
 /*
   Substitution Scoring model.
 */
 var ScoreT = {
-    identityNuc: {
-        A: { A: 2.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        B: { A: -1.0, B: 2.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        C: { A: -1.0, B: -1.0, C: 2.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        D: { A: -1.0, B: -1.0, C: -1.0, D: 2.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        G: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: 2.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        H: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: 2.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        K: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: 2.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        M: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: 2.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        R: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: 2.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        S: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: 2.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        T: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: 2.0, U: 1.0, V: -1.0, W: -1.0, Y: -1.0 },
-        U: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: 1.0, U: 2.0, V: -1.0, W: -1.0, Y: -1.0 },
-        V: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: 2.0, W: -1.0, Y: -1.0 },
-        W: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: 2.0, Y: -1.0 },
-        Y: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: 2.0 }
-    }
+	identityNuc: {
+		A: { A: 2.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		B: { A: -1.0, B: 2.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		C: { A: -1.0, B: -1.0, C: 2.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		D: { A: -1.0, B: -1.0, C: -1.0, D: 2.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		G: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: 2.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		H: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: 2.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		K: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: 2.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		M: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: 2.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		R: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: 2.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		S: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: 2.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		T: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: 2.0, U: 1.0, V: -1.0, W: -1.0, Y: -1.0 },
+		U: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: 1.0, U: 2.0, V: -1.0, W: -1.0, Y: -1.0 },
+		V: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: 2.0, W: -1.0, Y: -1.0 },
+		W: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: 2.0, Y: -1.0 },
+		Y: { A: -1.0, B: -1.0, C: -1.0, D: -1.0, G: -1.0, H: -1.0, K: -1.0, M: -1.0, R: -1.0, S: -1.0, T: -1.0, U: -1.0, V: -1.0, W: -1.0, Y: 2.0 }
+	}
 };
 
 var S = function (substitution, x, y) {
-    var substitutional_matrix = substitution.submatrix || ScoreT.identityNuc;
-    return substitutional_matrix[x.toUpperCase()][y.toUpperCase()];
+	var substitutional_matrix = substitution.submatrix || ScoreT.identityNuc;
+	return substitutional_matrix[x.toUpperCase()][y.toUpperCase()];
 };
+
+var is_match = function (x, y) {
+	if (x.toUpperCase() == y.toUpperCase()) {
+		return true;
+	} else {
+		return false;
+	}
+};
+
 
 /*
 Gap Penalty models:
@@ -66,48 +76,49 @@ the possibility to evaluate with different scores gaps of different sizes;
 */
 
 var sw_linear_gap = function (search_profile, s1, s2) {
-    var gap = search_profile.gap || -1;
-    var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
-    var l1 = s1.length;
-    var l2 = s2.length;
-    var score_mat = Matrix(l1, l2);
-    var trace_mat = Matrix(l1, l2);
+	var gap = search_profile.gap || -1;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = s1.length;
+	var l2 = s2.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
 
-    for (i = 0; i < l1; ++i) {
+	for (i = 0; i < l1; ++i) {
 
-        for (j = 0; j < l2; ++j) {
+		for (j = 0; j < l2; ++j) {
 
-            /* This is the first row / column which is all zeros */
-            if (i == 0 || j == 0) {
-                score_mat[i][j] = 0;
-                trace_mat[i][j] = 3;
-                continue;
+			/* This is the first row / column which is all zeros */
+			if (i == 0 || j == 0) {
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 3;
+				continue;
 
-            } else {
-                var d_last = score_mat[i - 1][j - 1];
-                var u_last = score_mat[i - 1][j];
-                var l_last = score_mat[i][j - 1];
-            }
-            var d_new = d_last + substitution.method(substitution, s1[i], s2[j]);
-            var u_new = u_last + gap;
-            var l_new = l_last + gap;
-            score_mat[i][j] = Math.max(d_new, u_new, l_new, 0);
-            var arr = [d_new, u_new, l_new, 0];
-            var trace = arr.indexOf(Math.max.apply(Math, arr));
-            trace_mat[i][j] = trace;
-        }
-    }
-    /* console.log(score_mat); */
-    var mscore = score_mat[0][0];
-    for (i = 0; i < l1; ++i) {
-        for (j = 0; j < l2; ++j) {
-            if (mscore < score_mat[i][j])
-                mscore = score_mat[i][j];
-        }
-    }
-    /* console.log(mscore); */
+			} else {
+				var d_last = score_mat[i - 1][j - 1];
+				var u_last = score_mat[i - 1][j];
+				var l_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, s1[i], s2[j])
+			var d_new = d_last + s;
+			var u_new = u_last + gap;
+			var l_new = l_last + gap;
+			score_mat[i][j] = Math.max(d_new, u_new, l_new, 0);
+			var arr = [score_mat[i][j], u_new, l_new, 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
 
-    return [mscore, score_mat, trace_mat];
+	return [mscore, score_mat, trace_mat];
 }
 
 /*
@@ -124,124 +135,300 @@ var sw_linear_gap = function (search_profile, s1, s2) {
  */
 
 var sw_affine_gotoh_gap = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
-    var gapOpen = search_profile.gapOpen || -1;
-    var gapExt = search_profile.gapExt || 0;
-    var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
-    var l1 = dseq.length;
-    var l2 = qseq.length;
-    var score_mat = Matrix(l1, l2);
-    var trace_mat = Matrix(l1, l2);
-    var ee = Matrix(l1, l2);
-    var ff = Matrix(l1, l2);
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	//  var ff = Matrix(l1, l2);
+	var ff = Matrix(l2, l1);
 
-    for (i = 0; i < l1; ++i) {
+	for (i = 0; i < l1; ++i) {
 
-        for (j = 0; j < l2; ++j) {
+		for (j = 0; j < l2; ++j) {
 
-            // This is the first row / column which is all zeros
-            if (i == 0 || j == 0) {
-                if (i == 0)
-                    ee[i][j] = 0;
-                if (j == 0)
-                    ff[i][j] = 0;
-                score_mat[i][j] = 0;
-                trace_mat[i][j] = 3;
-                continue;
+			// This is the first row / column which is all zeros
+			if (i == 0 || j == 0) {
+				if (i == 0)
+					ee[i][j] = 0;
+				if (j == 0)
+					ff[j][i] = 0; // j->i
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 0;
+				continue;
 
-            } else {
-                var e_last = ee[i][j - 1];
-                var f_last = ff[i - 1][j];
-                var d_last = score_mat[i - 1][j - 1];
-                var u_last = score_mat[i - 1][j];
-                var l_last = score_mat[i][j - 1];
-            }
-            var d_new = d_last + substitution.method(substitution, dseq[i], qseq[j]);
-            var u_new = u_last + gapOpen;
-            var l_new = l_last + gapOpen;
-            var e_new = e_last + gapExt;
-            var f_new = f_last + gapExt;
-            ee[i][j] = Math.max(e_new, l_new);
-            ff[i][j] = Math.max(f_new, u_new);
+			} else {
+				var e_last = ee[i][j - 1];
+				var f_last = ff[j][i - 1];
+				var d_last = score_mat[i - 1][j - 1];
+				var u_last = score_mat[i - 1][j];
+				var l_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var d_new = d_last + s
+			var u_new = u_last + gapOpen;
+			var l_new = l_last + gapOpen;
+			var e_new = e_last + gapExt;
+			var f_new = f_last + gapExt;
 
-            score_mat[i][j] = Math.max(d_new, ee[i][j], ff[i][j], 0);
-            var arr = [d_new, ff[i][j], ee[i][j], 0];
-            var trace = arr.indexOf(Math.max.apply(Math, arr));
-            trace_mat[i][j] = trace;
-        }
-    }
-    /* console.log(score_mat); */
-    var mscore = score_mat[0][0];
-    for (i = 0; i < l1; ++i) {
-        for (j = 0; j < l2; ++j) {
-            if (mscore < score_mat[i][j])
-                mscore = score_mat[i][j];
-        }
-    }
-    /* console.log(mscore); */
+			ee[i][j] = Math.max(e_new, l_new);
+			ff[j][i] = Math.max(f_new, u_new);
 
-    return [mscore, score_mat, trace_mat];
+			score_mat[i][j] = Math.max(d_new, ee[i][j], ff[j][i], 0);
+			if (score_mat[i][j] == d_new && !is_match(dseq[i], qseq[j])) {
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+				//				ee[i][j] = ee[i][j] + s;
+				//				ff[j][i] = ff[j][i] + s;
+
+			}
+			if (score_mat[i][j] == ff[j][i])
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (score_mat[i][j] == ee[i][j])
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (score_mat[i][j] == d_new && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (score_mat[i][j] == 0)
+				trace_mat[i][j] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+			var arr = [d_new, ff[i][j], ee[i][j], 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+			*/
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, score_mat, trace_mat];
 }
+
+var sw_affine_gap_gotoh_v1 = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	//  var ff = Matrix(l1, l2);
+	var ff = Matrix(l2, l1);
+
+	for (i = 0; i < l1; ++i) {
+
+		for (j = 0; j < l2; ++j) {
+
+			// This is the first row / column which is all zeros
+			if (i == 0 || j == 0) {
+				if (i == 0)
+					ee[i][j] = 0;
+				if (j == 0)
+					ff[j][i] = 0; // j->i
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 0;
+				continue;
+
+			} else {
+				var e_last = ee[i][j - 1];
+				var f_last = ff[j][i - 1];
+				var d_last = score_mat[i - 1][j - 1];
+				var u_last = score_mat[i - 1][j];
+				var l_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var d_new = d_last + s
+			var u_new = u_last + gapOpen + gapExt;
+			var l_new = l_last + gapOpen + gapExt;
+			var e_new = e_last + gapExt;
+			var f_new = f_last + gapExt;
+
+			ee[i][j] = Math.max(e_new, l_new);
+			ff[j][i] = Math.max(f_new, u_new);
+
+			score_mat[i][j] = Math.max(d_new, ee[i][j], ff[j][i], 0);
+			if (score_mat[i][j] == d_new && !is_match(dseq[i], qseq[j])) {
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+				ee[i][j] = ee[i][j] + s; /* compensation */
+				ff[j][i] = ff[j][i] + s;
+
+			}
+			if (score_mat[i][j] == ff[j][i])
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (score_mat[i][j] == ee[i][j])
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (score_mat[i][j] == d_new && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (score_mat[i][j] == 0)
+				trace_mat[i][j] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+			var arr = [d_new, ff[i][j], ee[i][j], 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+			*/
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, score_mat, trace_mat];
+}
+
+var sw_affine_gap_gotoh_v2 = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	//  var ff = Matrix(l1, l2);
+	var ff = Matrix(l2, l1);
+
+	for (i = 0; i < l1; ++i) {
+
+		for (j = 0; j < l2; ++j) {
+
+			// This is the first row / column which is all zeros
+			if (i == 0 || j == 0) {
+				if (i == 0)
+					ee[i][j] = 0;
+				if (j == 0)
+					ff[j][i] = 0; // j->i
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 0;
+				continue;
+
+			} else {
+				var e_last = ee[i][j - 1];
+				var f_last = ff[j][i - 1];
+				var d_last = score_mat[i - 1][j - 1];
+				var u_last = score_mat[i - 1][j];
+				var l_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var d_new = d_last + s
+			var u_new = u_last + gapOpen + gapExt;
+			var l_new = l_last + gapOpen + gapExt;
+			var e_new = e_last + gapExt;
+			var f_new = f_last + gapExt;
+
+			ee[i][j] = Math.max(e_new, l_new);
+			ff[j][i] = Math.max(f_new, u_new);
+
+			score_mat[i][j] = Math.max(d_new, ee[i][j], ff[j][i], 0);
+			if (score_mat[i][j] == d_new && !is_match(dseq[i], qseq[j])) {
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+				//				ee[i][j] = ee[i][j] + s;
+				//				ff[j][i] = ff[j][i] + s;
+
+			}
+			if (score_mat[i][j] == ff[j][i])
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (score_mat[i][j] == ee[i][j])
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (score_mat[i][j] == d_new && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (score_mat[i][j] == 0)
+				trace_mat[i][j] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+			var arr = [d_new, ff[i][j], ee[i][j], 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+			*/
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, score_mat, trace_mat];
+}
+
 /*
    Other the Smith-Waterman algorithm implementation, which is described in:
    http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf
 */
 var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
-    var gapOpen = search_profile.gapOpen || -1;
-    var gapExt = search_profile.gapExt || 0;
-    var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
-    var l1 = dseq.length;
-    var l2 = qseq.length;
-    var score_mat = Matrix(l1, l2);
-    var trace_mat = Matrix(l1, l2);
-    var ee = Matrix(l1, l2);
-    var ff = Matrix(l1, l2);
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
 
-    for (i = 0; i < l1; ++i) {
+	for (i = 0; i < l1; ++i) {
 
-        for (j = 0; j < l2; ++j) {
+		for (j = 0; j < l2; ++j) {
 
-            /* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
+			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
                but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
-            if (i == 0 || j == 0) { /**/
-                if (i == 0)
-                    ee[i][j] = -1000;
-                if (j == 0)
-                    ff[i][j] = -1000;
-                score_mat[i][j] = 0;
-                trace_mat[i][j] = 3;
-                continue;
+			if (i == 0 || j == 0) { /**/
+				if (i == 0)
+					ee[i][j] = -1000;
+				if (j == 0)
+					ff[i][j] = -1000;
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 3;
+				continue;
 
-            } else {
-                var ey_last = ee[i][j - 1];
-                var fx_last = ff[i - 1][j];
-                var m_last = score_mat[i - 1][j - 1];
-                var mx_last = score_mat[i - 1][j];
-                var my_last = score_mat[i][j - 1];
-            }
-            var s = substitution.method(substitution, dseq[i], qseq[j]);
-            var m_new = m_last + s;
-            var mx_new = mx_last + gapOpen;
-            var my_new = my_last + gapOpen;
-            ee[i][j] = Math.max(ey_last + gapExt, my_new + gapExt);
-            ff[i][j] = Math.max(fx_last + gapExt, mx_new + gapExt);
+			} else {
+				var ey_last = ee[i][j - 1];
+				var fx_last = ff[i - 1][j];
+				var m_last = score_mat[i - 1][j - 1];
+				var mx_last = score_mat[i - 1][j];
+				var my_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var m_new = m_last + s;
+			var mx_new = mx_last + gapOpen;
+			var my_new = my_last + gapOpen;
+			ee[i][j] = Math.max(ey_last + gapExt, my_new + gapExt);
+			ff[i][j] = Math.max(fx_last + gapExt, mx_new + gapExt);
 
-            score_mat[i][j] = Math.max(m_new, /*y*/ee[i - 1][j - 1] + s, /*x*/ff[i - 1][j - 1] + s, 0);
-            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
-            var trace = arr.indexOf(Math.max.apply(Math, arr));
-            trace_mat[i][j] = trace;
-        }
-    }
-    /* console.log(score_mat); */
-    var mscore = score_mat[0][0];
-    for (i = 0; i < l1; ++i) {
-        for (j = 0; j < l2; ++j) {
-            if (mscore < score_mat[i][j])
-                mscore = score_mat[i][j];
-        }
-    }
-    /* console.log(mscore); */
+			score_mat[i][j] = Math.max(m_new, /*y*/ee[i - 1][j - 1] + s, /*x*/ff[i - 1][j - 1] + s, 0);
+			var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
 
-    return [mscore, score_mat, trace_mat];
+	return [mscore, score_mat, trace_mat];
 }
 
 /*
@@ -249,115 +436,119 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
    http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf
 */
 var sw_affine_gap_v2 = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
-    var gapOpen = search_profile.gapOpen || -1;
-    var gapExt = search_profile.gapExt || 0;
-    var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
-    var l1 = dseq.length;
-    var l2 = qseq.length;
-    var score_mat = Matrix(l1, l2);
-    var trace_mat = Matrix(l1, l2);
-    var ee = Matrix(l1, l2);
-    var ff = Matrix(l1, l2);
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
 
-    for (i = 0; i < l1; ++i) {
+	for (i = 0; i < l1; ++i) {
 
-        for (j = 0; j < l2; ++j) {
+		for (j = 0; j < l2; ++j) {
 
-            /* initialization in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
-            if (i == 0 || j == 0) { /**/
-                if (i == 0)
-                    ee[i][j] = 0;
-                if (j == 0)
-                    ff[i][j] = 0;
-                score_mat[i][j] = 0;
-                trace_mat[i][j] = 3;
-                continue;
+			/* initialization in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+			if (i == 0 || j == 0) { /**/
+				if (i == 0)
+					ee[i][j] = 0;
+				if (j == 0)
+					ff[i][j] = 0;
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 3;
+				continue;
 
-            } else {
-                var ey_last = ee[i][j - 1];
-                var fx_last = ff[i - 1][j];
-                var m_last = score_mat[i - 1][j - 1];
-                var mx_last = score_mat[i - 1][j];
-                var my_last = score_mat[i][j - 1];
-            }
-            var s = substitution.method(substitution, dseq[i], qseq[j]);  /* Substitutional Matrix */
-            var m_new = m_last + s;
-            var mx_new = mx_last + gapOpen; /* */
-            var my_new = my_last + gapOpen;
-            ee[i][j] = Math.max(ey_last + gapExt, my_new, 0);
-            ff[i][j] = Math.max(fx_last + gapExt, mx_new, 0);
+			} else {
+				var ey_last = ee[i][j - 1];
+				var fx_last = ff[i - 1][j];
+				var m_last = score_mat[i - 1][j - 1];
+				var mx_last = score_mat[i - 1][j];
+				var my_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);  /* Substitutional Matrix */
+			var m_new = m_last + s;
+			var mx_new = mx_last + gapOpen; /* */
+			var my_new = my_last + gapOpen;
+			ee[i][j] = Math.max(ey_last + gapExt, my_new, 0);
+			ff[i][j] = Math.max(fx_last + gapExt, mx_new, 0);
 
-            score_mat[i][j] = Math.max(m_new, /*y*/ee[i - 1][j - 1] + s, /*x*/ff[i - 1][j - 1] + s, 0);
-            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
-            var trace = arr.indexOf(Math.max.apply(Math, arr));
-            trace_mat[i][j] = trace;
-        }
-    }
-    /* console.log(score_mat); */
-    var mscore = score_mat[0][0];
-    for (i = 0; i < l1; ++i) {
-        for (j = 0; j < l2; ++j) {
-            if (mscore < score_mat[i][j])
-                mscore = score_mat[i][j];
-        }
-    }
-    /* console.log(mscore); */
+			score_mat[i][j] = Math.max(m_new, /*y*/ee[i - 1][j - 1] + s, /*x*/ff[i - 1][j - 1] + s, 0);
+			var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
 
-    return [mscore, score_mat, trace_mat];
+	return [mscore, score_mat, trace_mat];
 }
 
 function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
-    var sequence_1 = seq_1.split(" ");
-    var sequence_2 = seq_2.split(" ");
-    var subtitution = { method: score, match: 1.0, mismatch: -1.0 }; /* define Match/Mismatch Scoring model */
-    if (matrix == 'identityNuc')
-        subtitution = { method: S, submatrix: ScoreT[matrix] }; /* define Substitution Scoring model */
-    /* Append dash in beginning for first row / column */
-    sequence_1 = ["-"].concat(sequence_1);
-    sequence_2 = ["-"].concat(sequence_2);
+	var sequence_1 = seq_1.split(" ");
+	var sequence_2 = seq_2.split(" ");
+	var subtitution = { method: score, match: 1.0, mismatch: -1.0 }; /* define Match/Mismatch Scoring model */
+	if (matrix == 'identityNuc')
+		subtitution = { method: S, submatrix: ScoreT[matrix] }; /* define Substitution Scoring model */
+	/* Append dash in beginning for first row / column */
+	sequence_1 = ["-"].concat(sequence_1);
+	sequence_2 = ["-"].concat(sequence_2);
 
-    var search_profile = { S: subtitution, gap: gapOpen }; /*define search profile*/
-    ret = sw_linear_gap(search_profile, sequence_1, sequence_2);
-    console.log('max score: ' + ret[0]);
+	//    var search_profile = { S: subtitution, gap: gapOpen }; /*define search profile*/
+	//    ret = sw_linear_gap(search_profile, sequence_1, sequence_2);
+	//console.log('max score: ' + ret[0]);
 
-    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-    ret = sw_affine_gotoh_gap(search_profile, sequence_1, sequence_2);
-    console.log('max score of affine: ' + ret[0]);
+	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	//    ret = sw_affine_gotoh_gap(search_profile, sequence_1, sequence_2);
+	//    console.log('max score of affine: ' + ret[0]);
 
-    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-    ret = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
-    console.log('max score of v1: ' + ret[0]);
+	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	ret = sw_affine_gap_gotoh_v2(search_profile, sequence_1, sequence_2);
+	console.log('max score of affine: ' + ret[0]);
 
-    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
-    console.log('max score of v2: ' + ret[0]);
+	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	//    ret = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
+	//    console.log('max score of v1: ' + ret[0]);
+
+	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	//    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
+	//    console.log('max score of v2: ' + ret[0]);
 
 
 
-    var ready_to_sketch = {
-    	seq1: sequence_1,
-    	seq2: sequence_2,
-    	score: ret[0],
-    	scorematrix: ret[1],
-    	directions: ret[2]
-    };
-    var ojal = { "score": 34, "scorematrix": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1], [0, 2, 1, 1, 3, 2, 2, 2, 2, 3, 2, 3, 3, 2, 2, 2, 3, 2, 3, 2, 2, 2, 2, 2, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3], [0, 2, 1, 1, 3, 2, 2, 2, 2, 4, 3, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4], [0, 1, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 6, 5, 6, 6, 5, 5, 5, 5, 5, 6, 5, 6, 6, 5, 7, 6, 6, 6, 6], [0, 1, 3, 3, 2, 5, 4, 4, 5, 4, 4, 4, 4, 4, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 6, 6, 8, 7, 7, 7, 7, 7, 7, 7, 8], [0, 1, 3, 2, 2, 4, 4, 3, 6, 5, 5, 5, 5, 5, 6, 5, 5, 7, 6, 6, 6, 6, 6, 6, 6, 6, 7, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9], [0, 1, 3, 2, 2, 4, 3, 3, 5, 5, 4, 4, 4, 4, 5, 5, 4, 6, 6, 5, 8, 7, 8, 8, 7, 7, 7, 8, 8, 10, 9, 10, 10, 9, 10, 10, 10, 10, 9], [0, 1, 3, 2, 2, 4, 3, 3, 5, 4, 4, 4, 4, 4, 5, 4, 4, 6, 5, 5, 7, 7, 9, 10, 9, 9, 9, 9, 9, 10, 9, 11, 12, 11, 11, 12, 12, 12, 11], [0, 1, 3, 2, 2, 4, 3, 3, 5, 4, 4, 4, 4, 4, 6, 5, 5, 6, 5, 5, 7, 6, 8, 9, 9, 8, 11, 11, 10, 10, 12, 11, 11, 11, 11, 11, 11, 11, 14], [0, 1, 3, 5, 4, 4, 6, 5, 5, 5, 6, 5, 5, 6, 5, 8, 7, 7, 7, 7, 7, 9, 8, 9, 8, 11, 10, 10, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13], [0, 1, 3, 5, 4, 4, 6, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 8, 9, 8, 9, 8, 10, 10, 10, 12, 12, 11, 11, 11, 11, 11, 11, 11, 11, 13], [0, 1, 3, 4, 4, 4, 5, 7, 7, 6, 6, 6, 6, 6, 6, 7, 6, 6, 6, 8, 11, 10, 11, 10, 10, 10, 10, 10, 12, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13], [0, 1, 3, 5, 4, 4, 6, 7, 6, 6, 8, 7, 7, 8, 7, 8, 7, 7, 7, 8, 10, 13, 12, 12, 12, 12, 12, 12, 12, 13, 13, 12, 12, 12, 12, 12, 12, 12, 13], [0, 1, 3, 4, 4, 4, 5, 7, 6, 6, 7, 7, 6, 7, 7, 7, 7, 6, 6, 8, 10, 12, 15, 14, 14, 14, 14, 14, 14, 14, 14, 15, 14, 14, 14, 14, 14, 14, 14], [0, 1, 3, 4, 3, 6, 5, 7, 9, 8, 8, 8, 8, 8, 9, 8, 8, 9, 8, 8, 10, 12, 14, 14, 13, 13, 16, 16, 15, 15, 16, 15, 15, 15, 15, 15, 15, 15, 16], [0, 2, 3, 4, 6, 5, 5, 7, 8, 11, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 10, 12, 14, 13, 16, 15, 15, 15, 15, 15, 15, 15, 15, 17, 16, 16, 16, 16, 16], [0, 1, 3, 4, 5, 8, 7, 7, 9, 10, 10, 9, 9, 9, 12, 11, 11, 12, 11, 11, 11, 12, 14, 13, 15, 15, 17, 17, 16, 16, 17, 16, 16, 16, 16, 16, 16, 16, 18], [0, 1, 3, 4, 5, 7, 7, 7, 8, 10, 9, 9, 9, 9, 11, 11, 10, 11, 11, 10, 13, 12, 14, 16, 15, 15, 16, 16, 16, 18, 17, 19, 18, 18, 18, 18, 18, 18, 18], [0, 2, 3, 4, 6, 7, 6, 7, 8, 10, 9, 11, 11, 10, 11, 10, 13, 12, 13, 12, 12, 12, 14, 15, 18, 17, 17, 17, 17, 17, 17, 18, 18, 20, 19, 19, 19, 19, 19], [0, 1, 4, 4, 5, 7, 6, 7, 8, 10, 9, 10, 10, 10, 11, 10, 12, 12, 12, 12, 14, 13, 14, 16, 17, 17, 16, 16, 16, 19, 18, 19, 20, 19, 22, 21, 21, 21, 21], [0, 1, 3, 4, 5, 7, 6, 7, 9, 10, 9, 10, 10, 9, 12, 11, 12, 14, 13, 13, 13, 13, 14, 15, 17, 16, 19, 18, 18, 18, 21, 20, 20, 20, 21, 21, 20, 20, 23], [0, 1, 3, 4, 5, 7, 6, 7, 9, 10, 9, 10, 10, 9, 11, 11, 12, 14, 13, 13, 13, 13, 14, 15, 17, 16, 18, 21, 20, 20, 20, 20, 20, 20, 21, 20, 20, 20, 22], [0, 1, 3, 4, 5, 7, 6, 7, 8, 10, 9, 10, 10, 9, 11, 10, 12, 13, 13, 12, 15, 14, 15, 16, 17, 16, 18, 20, 20, 22, 21, 22, 22, 21, 22, 23, 22, 22, 22], [0, 1, 3, 4, 5, 7, 6, 7, 9, 10, 9, 10, 10, 9, 11, 10, 12, 14, 13, 13, 14, 14, 14, 15, 17, 16, 18, 20, 19, 21, 24, 23, 23, 23, 23, 23, 23, 23, 24], [0, 2, 3, 4, 6, 7, 6, 7, 8, 11, 10, 11, 12, 11, 11, 11, 12, 13, 16, 15, 15, 15, 15, 15, 17, 16, 18, 20, 19, 21, 23, 23, 22, 25, 24, 24, 24, 24, 24], [0, 1, 4, 4, 5, 7, 6, 7, 8, 10, 10, 10, 11, 11, 11, 10, 12, 13, 15, 15, 17, 16, 17, 17, 17, 16, 18, 20, 19, 21, 23, 25, 25, 24, 27, 26, 26, 26, 26], [0, 1, 3, 4, 5, 7, 6, 7, 8, 10, 9, 10, 11, 10, 11, 10, 12, 13, 15, 14, 17, 16, 18, 19, 18, 18, 18, 20, 19, 21, 23, 25, 27, 26, 26, 29, 28, 28, 28], [0, 2, 3, 4, 6, 7, 6, 7, 8, 10, 9, 11, 12, 11, 11, 11, 12, 13, 15, 14, 16, 16, 17, 18, 21, 20, 20, 20, 20, 21, 23, 24, 26, 29, 28, 28, 28, 28, 28], [0, 1, 3, 4, 5, 8, 7, 7, 9, 10, 9, 10, 11, 11, 13, 12, 12, 14, 15, 14, 16, 15, 17, 18, 20, 20, 22, 22, 21, 21, 23, 24, 26, 28, 28, 28, 27, 27, 30], [0, 1, 3, 4, 5, 7, 7, 7, 8, 10, 9, 10, 11, 10, 12, 12, 12, 13, 15, 14, 16, 15, 17, 19, 20, 19, 21, 21, 21, 23, 23, 25, 26, 28, 30, 30, 30, 29, 29], [0, 1, 3, 5, 5, 7, 9, 9, 8, 10, 12, 11, 11, 13, 12, 14, 13, 13, 15, 17, 16, 18, 17, 18, 20, 22, 21, 21, 23, 22, 23, 24, 26, 28, 29, 29, 29, 29, 29], [0, 1, 3, 4, 5, 7, 8, 8, 11, 10, 11, 11, 11, 12, 15, 14, 14, 15, 15, 16, 16, 17, 17, 18, 20, 21, 24, 23, 23, 23, 24, 24, 26, 28, 29, 29, 29, 28, 31], [0, 1, 3, 4, 5, 7, 8, 8, 10, 10, 11, 10, 11, 12, 14, 14, 13, 14, 15, 16, 18, 17, 19, 19, 20, 21, 23, 23, 22, 25, 24, 26, 26, 28, 30, 31, 31, 31, 30], [0, 1, 3, 4, 5, 7, 8, 8, 10, 10, 11, 10, 11, 12, 14, 13, 13, 15, 15, 16, 17, 17, 18, 18, 20, 21, 23, 25, 24, 24, 27, 26, 26, 28, 29, 30, 30, 30, 33], [0, 1, 3, 5, 5, 7, 9, 10, 10, 10, 12, 11, 11, 13, 14, 16, 15, 15, 15, 17, 17, 19, 18, 18, 20, 22, 23, 24, 27, 26, 26, 26, 26, 28, 29, 30, 30, 30, 32], [0, 1, 3, 4, 5, 7, 8, 9, 10, 10, 11, 11, 11, 12, 14, 15, 15, 14, 15, 16, 19, 18, 21, 20, 20, 21, 23, 24, 26, 29, 28, 28, 28, 28, 30, 31, 32, 32, 32], [0, 2, 3, 4, 6, 7, 8, 9, 10, 12, 11, 13, 13, 12, 14, 15, 17, 16, 16, 16, 18, 18, 20, 20, 22, 21, 23, 24, 26, 28, 28, 27, 27, 30, 29, 30, 31, 31, 32], [0, 1, 3, 5, 5, 7, 9, 10, 10, 11, 14, 13, 13, 15, 14, 16, 16, 16, 15, 18, 18, 20, 20, 19, 21, 24, 23, 24, 26, 28, 27, 27, 27, 29, 29, 30, 31, 31, 32], [0, 1, 3, 4, 5, 7, 8, 9, 10, 11, 13, 13, 12, 14, 14, 15, 16, 15, 15, 17, 20, 19, 22, 22, 21, 23, 23, 24, 26, 28, 27, 29, 29, 29, 31, 31, 32, 33, 32], [0, 1, 3, 5, 5, 7, 9, 10, 10, 11, 13, 12, 12, 14, 14, 16, 16, 15, 15, 17, 19, 22, 21, 21, 21, 23, 23, 24, 26, 28, 27, 28, 28, 29, 30, 30, 31, 32, 32], [0, 1, 3, 4, 5, 7, 8, 9, 12, 11, 13, 12, 12, 14, 16, 15, 16, 18, 17, 17, 19, 21, 21, 21, 21, 23, 25, 25, 26, 28, 30, 29, 29, 29, 30, 30, 31, 32, 34]], "directions": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 77, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 2, 2, 2, 2, 9], [0, 2, 13, 9, 2, 9, 9, 9, 9, 2, 9, 2, 2, 9, 9, 9, 2, 9, 2, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9], [0, 2, 13, 9, 2, 9, 9, 9, 9, 2, 9, 2, 2, 9, 9, 9, 10, 9, 10, 9, 9, 9, 9, 9, 10, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9], [0, 5, 2, 9, 9, 9, 9, 9, 9, 13, 9, 13, 5, 1, 13, 13, 13, 13, 13, 13, 2, 9, 2, 2, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 2, 10, 10, 10, 9], [0, 5, 5, 1, 13, 2, 9, 9, 2, 9, 9, 9, 13, 9, 2, 9, 9, 10, 9, 9, 13, 9, 13, 13, 9, 9, 2, 2, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 2], [0, 5, 5, 13, 13, 6, 1, 13, 2, 9, 9, 9, 9, 9, 2, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 9, 2, 2, 9, 9, 10, 9, 9, 9, 9, 9, 9, 9, 2], [0, 5, 6, 13, 13, 5, 13, 13, 5, 1, 13, 13, 13, 13, 5, 1, 13, 5, 1, 13, 2, 9, 2, 2, 9, 9, 9, 5, 1, 2, 9, 2, 2, 9, 2, 2, 2, 2, 9], [0, 5, 6, 13, 13, 5, 13, 13, 5, 13, 13, 13, 13, 13, 5, 13, 13, 5, 13, 13, 6, 1, 2, 2, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 10, 2, 2, 2, 9], [0, 5, 5, 13, 13, 6, 13, 13, 6, 13, 13, 13, 13, 13, 2, 9, 9, 6, 13, 13, 5, 13, 5, 5, 1, 13, 2, 2, 9, 9, 2, 9, 13, 9, 9, 13, 13, 13, 2], [0, 5, 5, 2, 9, 13, 2, 10, 13, 9, 2, 9, 9, 2, 13, 2, 9, 9, 9, 10, 13, 2, 13, 5, 13, 2, 13, 13, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 5], [0, 5, 5, 2, 9, 13, 2, 2, 9, 9, 10, 9, 9, 10, 9, 14, 9, 9, 9, 2, 9, 2, 13, 5, 13, 6, 5, 5, 6, 1, 13, 13, 13, 13, 13, 13, 13, 13, 5], [0, 5, 6, 5, 1, 5, 5, 5, 1, 13, 13, 13, 13, 13, 13, 5, 13, 13, 13, 5, 2, 9, 2, 10, 9, 13, 13, 13, 5, 2, 9, 10, 10, 9, 10, 10, 10, 10, 13], [0, 5, 5, 2, 9, 13, 2, 6, 13, 13, 2, 9, 9, 2, 9, 2, 9, 9, 9, 6, 5, 2, 9, 9, 9, 10, 9, 9, 14, 5, 1, 13, 13, 13, 13, 13, 13, 13, 5], [0, 5, 6, 5, 1, 5, 5, 5, 13, 13, 5, 1, 13, 5, 1, 5, 1, 13, 13, 5, 6, 5, 2, 10, 9, 9, 9, 9, 9, 10, 9, 2, 10, 9, 10, 10, 10, 10, 9], [0, 5, 5, 5, 13, 2, 13, 5, 2, 9, 9, 9, 9, 9, 2, 9, 9, 2, 9, 13, 5, 5, 5, 1, 13, 13, 2, 2, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 2], [0, 2, 5, 5, 2, 13, 13, 5, 5, 2, 9, 10, 10, 9, 9, 9, 10, 9, 2, 9, 13, 5, 5, 13, 2, 9, 13, 13, 9, 9, 13, 9, 9, 2, 9, 9, 9, 9, 9], [0, 5, 5, 5, 5, 2, 9, 13, 2, 5, 1, 13, 13, 13, 2, 9, 9, 2, 9, 9, 9, 5, 5, 13, 5, 1, 2, 2, 9, 9, 2, 9, 9, 13, 9, 9, 9, 9, 2], [0, 5, 6, 5, 5, 5, 1, 5, 5, 5, 13, 13, 13, 13, 5, 1, 13, 5, 1, 13, 2, 13, 6, 2, 13, 9, 5, 5, 1, 2, 9, 2, 10, 9, 10, 10, 10, 10, 9], [0, 2, 5, 5, 2, 5, 13, 5, 5, 6, 13, 2, 2, 9, 5, 13, 2, 9, 2, 9, 13, 13, 5, 5, 2, 9, 9, 9, 9, 13, 9, 5, 1, 2, 9, 9, 9, 9, 9], [0, 5, 2, 5, 5, 5, 13, 5, 5, 5, 13, 5, 5, 1, 5, 13, 5, 1, 5, 1, 2, 9, 6, 2, 5, 1, 13, 13, 13, 2, 9, 2, 2, 13, 2, 10, 10, 10, 9], [0, 5, 5, 5, 5, 6, 13, 5, 2, 5, 13, 5, 5, 13, 2, 9, 5, 2, 9, 9, 13, 9, 5, 5, 5, 13, 2, 10, 9, 13, 2, 9, 9, 9, 5, 1, 13, 13, 2], [0, 5, 5, 5, 5, 6, 13, 5, 2, 5, 13, 5, 5, 13, 6, 1, 5, 2, 9, 9, 13, 9, 5, 5, 5, 13, 6, 2, 9, 9, 14, 9, 9, 9, 5, 13, 13, 13, 6], [0, 5, 6, 5, 5, 5, 13, 5, 5, 5, 13, 5, 5, 13, 5, 13, 5, 5, 1, 13, 2, 9, 2, 2, 5, 13, 5, 5, 1, 2, 9, 2, 2, 9, 2, 2, 10, 10, 13], [0, 5, 5, 5, 5, 6, 13, 5, 2, 5, 13, 5, 5, 13, 6, 13, 5, 2, 9, 9, 5, 1, 5, 5, 5, 13, 6, 6, 13, 5, 2, 9, 9, 9, 9, 9, 9, 9, 2], [0, 2, 5, 5, 2, 5, 13, 5, 5, 2, 9, 2, 2, 9, 13, 9, 6, 5, 2, 9, 9, 9, 9, 13, 6, 13, 5, 5, 13, 5, 5, 1, 13, 2, 9, 9, 9, 9, 9], [0, 5, 2, 5, 5, 5, 13, 5, 5, 5, 1, 5, 5, 1, 5, 13, 5, 5, 5, 1, 2, 9, 2, 2, 5, 13, 5, 5, 13, 6, 5, 2, 2, 13, 2, 10, 10, 10, 9], [0, 5, 6, 5, 5, 5, 13, 5, 5, 5, 13, 5, 5, 13, 5, 13, 5, 5, 5, 13, 2, 9, 2, 2, 9, 9, 13, 5, 13, 6, 5, 2, 2, 9, 14, 2, 10, 10, 9], [0, 2, 5, 5, 2, 5, 13, 5, 5, 6, 13, 2, 2, 9, 13, 9, 6, 5, 6, 13, 5, 1, 5, 5, 2, 9, 9, 13, 9, 5, 5, 5, 5, 2, 9, 13, 9, 9, 9], [0, 5, 5, 5, 5, 2, 9, 13, 2, 5, 13, 5, 5, 1, 2, 9, 13, 2, 5, 13, 5, 13, 5, 5, 5, 1, 2, 2, 9, 13, 6, 5, 5, 5, 1, 5, 13, 13, 2], [0, 5, 6, 5, 5, 5, 1, 5, 5, 5, 13, 5, 5, 13, 5, 1, 5, 5, 5, 13, 6, 13, 6, 2, 5, 13, 5, 5, 1, 2, 5, 2, 6, 5, 2, 2, 2, 10, 13], [0, 5, 5, 2, 5, 5, 2, 2, 13, 5, 2, 9, 13, 2, 13, 2, 9, 13, 5, 2, 13, 2, 13, 5, 5, 2, 13, 13, 2, 13, 5, 5, 5, 5, 5, 5, 5, 1, 5], [0, 5, 5, 5, 5, 6, 5, 5, 2, 13, 5, 1, 5, 5, 2, 9, 9, 2, 5, 5, 5, 5, 5, 5, 5, 5, 2, 10, 9, 9, 2, 5, 5, 5, 5, 5, 5, 13, 2], [0, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 13, 5, 5, 5, 1, 13, 5, 5, 5, 2, 13, 2, 2, 5, 5, 5, 1, 13, 2, 9, 2, 6, 5, 2, 2, 2, 2, 13], [0, 5, 5, 5, 5, 6, 5, 5, 6, 5, 5, 13, 5, 5, 6, 13, 13, 2, 5, 5, 5, 5, 5, 5, 5, 5, 6, 2, 9, 13, 2, 9, 13, 5, 5, 5, 5, 5, 2], [0, 5, 5, 2, 5, 5, 2, 2, 5, 5, 2, 9, 13, 2, 5, 2, 9, 9, 13, 2, 5, 2, 13, 13, 5, 2, 5, 5, 2, 9, 13, 9, 13, 5, 5, 5, 5, 5, 5], [0, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 1, 13, 5, 5, 2, 13, 2, 10, 13, 5, 5, 5, 5, 2, 9, 10, 10, 13, 2, 2, 2, 2, 5], [0, 2, 5, 5, 2, 5, 5, 5, 5, 2, 13, 2, 2, 13, 5, 5, 2, 9, 10, 13, 5, 5, 5, 1, 2, 13, 5, 5, 5, 5, 1, 13, 13, 2, 13, 5, 5, 5, 5], [0, 5, 5, 2, 5, 5, 2, 2, 5, 5, 2, 9, 9, 2, 13, 2, 5, 1, 13, 2, 5, 2, 5, 13, 5, 2, 13, 5, 6, 5, 13, 13, 13, 5, 5, 5, 5, 5, 5], [0, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 1, 13, 5, 5, 5, 5, 13, 13, 5, 2, 13, 2, 2, 13, 5, 5, 5, 5, 6, 13, 2, 2, 5, 2, 2, 2, 2, 13], [0, 5, 5, 2, 5, 5, 2, 2, 5, 5, 6, 13, 13, 6, 5, 2, 5, 13, 13, 6, 5, 2, 13, 13, 13, 6, 5, 5, 6, 5, 13, 5, 5, 5, 5, 5, 5, 5, 5], [0, 5, 5, 5, 5, 6, 5, 5, 2, 13, 5, 13, 13, 5, 2, 13, 5, 2, 9, 13, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 2, 9, 9, 13, 5, 5, 5, 5, 2]], "seq1": "CAACTTCCTGGCGCTATCACTTCTACCATCGTCTGCAGCGT", "seq2": "acgatggtagaagtgatagcgccagttgctccacccct" }
+	var ready_to_sketch = {
+		seq1: sequence_1,
+		seq2: sequence_2,
+		score: ret[0],
+		scorematrix: ret[1],
+		directions: ret[2]
+	};
+	var ojal = { "score": 34, "scorematrix": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1], [0, 2, 1, 1, 3, 2, 2, 2, 2, 3, 2, 3, 3, 2, 2, 2, 3, 2, 3, 2, 2, 2, 2, 2, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3], [0, 2, 1, 1, 3, 2, 2, 2, 2, 4, 3, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4], [0, 1, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 6, 5, 6, 6, 5, 5, 5, 5, 5, 6, 5, 6, 6, 5, 7, 6, 6, 6, 6], [0, 1, 3, 3, 2, 5, 4, 4, 5, 4, 4, 4, 4, 4, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 6, 6, 8, 7, 7, 7, 7, 7, 7, 7, 8], [0, 1, 3, 2, 2, 4, 4, 3, 6, 5, 5, 5, 5, 5, 6, 5, 5, 7, 6, 6, 6, 6, 6, 6, 6, 6, 7, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9], [0, 1, 3, 2, 2, 4, 3, 3, 5, 5, 4, 4, 4, 4, 5, 5, 4, 6, 6, 5, 8, 7, 8, 8, 7, 7, 7, 8, 8, 10, 9, 10, 10, 9, 10, 10, 10, 10, 9], [0, 1, 3, 2, 2, 4, 3, 3, 5, 4, 4, 4, 4, 4, 5, 4, 4, 6, 5, 5, 7, 7, 9, 10, 9, 9, 9, 9, 9, 10, 9, 11, 12, 11, 11, 12, 12, 12, 11], [0, 1, 3, 2, 2, 4, 3, 3, 5, 4, 4, 4, 4, 4, 6, 5, 5, 6, 5, 5, 7, 6, 8, 9, 9, 8, 11, 11, 10, 10, 12, 11, 11, 11, 11, 11, 11, 11, 14], [0, 1, 3, 5, 4, 4, 6, 5, 5, 5, 6, 5, 5, 6, 5, 8, 7, 7, 7, 7, 7, 9, 8, 9, 8, 11, 10, 10, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13], [0, 1, 3, 5, 4, 4, 6, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 8, 9, 8, 9, 8, 10, 10, 10, 12, 12, 11, 11, 11, 11, 11, 11, 11, 11, 13], [0, 1, 3, 4, 4, 4, 5, 7, 7, 6, 6, 6, 6, 6, 6, 7, 6, 6, 6, 8, 11, 10, 11, 10, 10, 10, 10, 10, 12, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13], [0, 1, 3, 5, 4, 4, 6, 7, 6, 6, 8, 7, 7, 8, 7, 8, 7, 7, 7, 8, 10, 13, 12, 12, 12, 12, 12, 12, 12, 13, 13, 12, 12, 12, 12, 12, 12, 12, 13], [0, 1, 3, 4, 4, 4, 5, 7, 6, 6, 7, 7, 6, 7, 7, 7, 7, 6, 6, 8, 10, 12, 15, 14, 14, 14, 14, 14, 14, 14, 14, 15, 14, 14, 14, 14, 14, 14, 14], [0, 1, 3, 4, 3, 6, 5, 7, 9, 8, 8, 8, 8, 8, 9, 8, 8, 9, 8, 8, 10, 12, 14, 14, 13, 13, 16, 16, 15, 15, 16, 15, 15, 15, 15, 15, 15, 15, 16], [0, 2, 3, 4, 6, 5, 5, 7, 8, 11, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 10, 12, 14, 13, 16, 15, 15, 15, 15, 15, 15, 15, 15, 17, 16, 16, 16, 16, 16], [0, 1, 3, 4, 5, 8, 7, 7, 9, 10, 10, 9, 9, 9, 12, 11, 11, 12, 11, 11, 11, 12, 14, 13, 15, 15, 17, 17, 16, 16, 17, 16, 16, 16, 16, 16, 16, 16, 18], [0, 1, 3, 4, 5, 7, 7, 7, 8, 10, 9, 9, 9, 9, 11, 11, 10, 11, 11, 10, 13, 12, 14, 16, 15, 15, 16, 16, 16, 18, 17, 19, 18, 18, 18, 18, 18, 18, 18], [0, 2, 3, 4, 6, 7, 6, 7, 8, 10, 9, 11, 11, 10, 11, 10, 13, 12, 13, 12, 12, 12, 14, 15, 18, 17, 17, 17, 17, 17, 17, 18, 18, 20, 19, 19, 19, 19, 19], [0, 1, 4, 4, 5, 7, 6, 7, 8, 10, 9, 10, 10, 10, 11, 10, 12, 12, 12, 12, 14, 13, 14, 16, 17, 17, 16, 16, 16, 19, 18, 19, 20, 19, 22, 21, 21, 21, 21], [0, 1, 3, 4, 5, 7, 6, 7, 9, 10, 9, 10, 10, 9, 12, 11, 12, 14, 13, 13, 13, 13, 14, 15, 17, 16, 19, 18, 18, 18, 21, 20, 20, 20, 21, 21, 20, 20, 23], [0, 1, 3, 4, 5, 7, 6, 7, 9, 10, 9, 10, 10, 9, 11, 11, 12, 14, 13, 13, 13, 13, 14, 15, 17, 16, 18, 21, 20, 20, 20, 20, 20, 20, 21, 20, 20, 20, 22], [0, 1, 3, 4, 5, 7, 6, 7, 8, 10, 9, 10, 10, 9, 11, 10, 12, 13, 13, 12, 15, 14, 15, 16, 17, 16, 18, 20, 20, 22, 21, 22, 22, 21, 22, 23, 22, 22, 22], [0, 1, 3, 4, 5, 7, 6, 7, 9, 10, 9, 10, 10, 9, 11, 10, 12, 14, 13, 13, 14, 14, 14, 15, 17, 16, 18, 20, 19, 21, 24, 23, 23, 23, 23, 23, 23, 23, 24], [0, 2, 3, 4, 6, 7, 6, 7, 8, 11, 10, 11, 12, 11, 11, 11, 12, 13, 16, 15, 15, 15, 15, 15, 17, 16, 18, 20, 19, 21, 23, 23, 22, 25, 24, 24, 24, 24, 24], [0, 1, 4, 4, 5, 7, 6, 7, 8, 10, 10, 10, 11, 11, 11, 10, 12, 13, 15, 15, 17, 16, 17, 17, 17, 16, 18, 20, 19, 21, 23, 25, 25, 24, 27, 26, 26, 26, 26], [0, 1, 3, 4, 5, 7, 6, 7, 8, 10, 9, 10, 11, 10, 11, 10, 12, 13, 15, 14, 17, 16, 18, 19, 18, 18, 18, 20, 19, 21, 23, 25, 27, 26, 26, 29, 28, 28, 28], [0, 2, 3, 4, 6, 7, 6, 7, 8, 10, 9, 11, 12, 11, 11, 11, 12, 13, 15, 14, 16, 16, 17, 18, 21, 20, 20, 20, 20, 21, 23, 24, 26, 29, 28, 28, 28, 28, 28], [0, 1, 3, 4, 5, 8, 7, 7, 9, 10, 9, 10, 11, 11, 13, 12, 12, 14, 15, 14, 16, 15, 17, 18, 20, 20, 22, 22, 21, 21, 23, 24, 26, 28, 28, 28, 27, 27, 30], [0, 1, 3, 4, 5, 7, 7, 7, 8, 10, 9, 10, 11, 10, 12, 12, 12, 13, 15, 14, 16, 15, 17, 19, 20, 19, 21, 21, 21, 23, 23, 25, 26, 28, 30, 30, 30, 29, 29], [0, 1, 3, 5, 5, 7, 9, 9, 8, 10, 12, 11, 11, 13, 12, 14, 13, 13, 15, 17, 16, 18, 17, 18, 20, 22, 21, 21, 23, 22, 23, 24, 26, 28, 29, 29, 29, 29, 29], [0, 1, 3, 4, 5, 7, 8, 8, 11, 10, 11, 11, 11, 12, 15, 14, 14, 15, 15, 16, 16, 17, 17, 18, 20, 21, 24, 23, 23, 23, 24, 24, 26, 28, 29, 29, 29, 28, 31], [0, 1, 3, 4, 5, 7, 8, 8, 10, 10, 11, 10, 11, 12, 14, 14, 13, 14, 15, 16, 18, 17, 19, 19, 20, 21, 23, 23, 22, 25, 24, 26, 26, 28, 30, 31, 31, 31, 30], [0, 1, 3, 4, 5, 7, 8, 8, 10, 10, 11, 10, 11, 12, 14, 13, 13, 15, 15, 16, 17, 17, 18, 18, 20, 21, 23, 25, 24, 24, 27, 26, 26, 28, 29, 30, 30, 30, 33], [0, 1, 3, 5, 5, 7, 9, 10, 10, 10, 12, 11, 11, 13, 14, 16, 15, 15, 15, 17, 17, 19, 18, 18, 20, 22, 23, 24, 27, 26, 26, 26, 26, 28, 29, 30, 30, 30, 32], [0, 1, 3, 4, 5, 7, 8, 9, 10, 10, 11, 11, 11, 12, 14, 15, 15, 14, 15, 16, 19, 18, 21, 20, 20, 21, 23, 24, 26, 29, 28, 28, 28, 28, 30, 31, 32, 32, 32], [0, 2, 3, 4, 6, 7, 8, 9, 10, 12, 11, 13, 13, 12, 14, 15, 17, 16, 16, 16, 18, 18, 20, 20, 22, 21, 23, 24, 26, 28, 28, 27, 27, 30, 29, 30, 31, 31, 32], [0, 1, 3, 5, 5, 7, 9, 10, 10, 11, 14, 13, 13, 15, 14, 16, 16, 16, 15, 18, 18, 20, 20, 19, 21, 24, 23, 24, 26, 28, 27, 27, 27, 29, 29, 30, 31, 31, 32], [0, 1, 3, 4, 5, 7, 8, 9, 10, 11, 13, 13, 12, 14, 14, 15, 16, 15, 15, 17, 20, 19, 22, 22, 21, 23, 23, 24, 26, 28, 27, 29, 29, 29, 31, 31, 32, 33, 32], [0, 1, 3, 5, 5, 7, 9, 10, 10, 11, 13, 12, 12, 14, 14, 16, 16, 15, 15, 17, 19, 22, 21, 21, 21, 23, 23, 24, 26, 28, 27, 28, 28, 29, 30, 30, 31, 32, 32], [0, 1, 3, 4, 5, 7, 8, 9, 12, 11, 13, 12, 12, 14, 16, 15, 16, 18, 17, 17, 19, 21, 21, 21, 21, 23, 25, 25, 26, 28, 30, 29, 29, 29, 30, 30, 31, 32, 34]], "directions": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 77, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 2, 2, 2, 2, 9], [0, 2, 13, 9, 2, 9, 9, 9, 9, 2, 9, 2, 2, 9, 9, 9, 2, 9, 2, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9], [0, 2, 13, 9, 2, 9, 9, 9, 9, 2, 9, 2, 2, 9, 9, 9, 10, 9, 10, 9, 9, 9, 9, 9, 10, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9], [0, 5, 2, 9, 9, 9, 9, 9, 9, 13, 9, 13, 5, 1, 13, 13, 13, 13, 13, 13, 2, 9, 2, 2, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 2, 10, 10, 10, 9], [0, 5, 5, 1, 13, 2, 9, 9, 2, 9, 9, 9, 13, 9, 2, 9, 9, 10, 9, 9, 13, 9, 13, 13, 9, 9, 2, 2, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 2], [0, 5, 5, 13, 13, 6, 1, 13, 2, 9, 9, 9, 9, 9, 2, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 9, 2, 2, 9, 9, 10, 9, 9, 9, 9, 9, 9, 9, 2], [0, 5, 6, 13, 13, 5, 13, 13, 5, 1, 13, 13, 13, 13, 5, 1, 13, 5, 1, 13, 2, 9, 2, 2, 9, 9, 9, 5, 1, 2, 9, 2, 2, 9, 2, 2, 2, 2, 9], [0, 5, 6, 13, 13, 5, 13, 13, 5, 13, 13, 13, 13, 13, 5, 13, 13, 5, 13, 13, 6, 1, 2, 2, 9, 9, 9, 9, 9, 2, 9, 2, 2, 9, 10, 2, 2, 2, 9], [0, 5, 5, 13, 13, 6, 13, 13, 6, 13, 13, 13, 13, 13, 2, 9, 9, 6, 13, 13, 5, 13, 5, 5, 1, 13, 2, 2, 9, 9, 2, 9, 13, 9, 9, 13, 13, 13, 2], [0, 5, 5, 2, 9, 13, 2, 10, 13, 9, 2, 9, 9, 2, 13, 2, 9, 9, 9, 10, 13, 2, 13, 5, 13, 2, 13, 13, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 5], [0, 5, 5, 2, 9, 13, 2, 2, 9, 9, 10, 9, 9, 10, 9, 14, 9, 9, 9, 2, 9, 2, 13, 5, 13, 6, 5, 5, 6, 1, 13, 13, 13, 13, 13, 13, 13, 13, 5], [0, 5, 6, 5, 1, 5, 5, 5, 1, 13, 13, 13, 13, 13, 13, 5, 13, 13, 13, 5, 2, 9, 2, 10, 9, 13, 13, 13, 5, 2, 9, 10, 10, 9, 10, 10, 10, 10, 13], [0, 5, 5, 2, 9, 13, 2, 6, 13, 13, 2, 9, 9, 2, 9, 2, 9, 9, 9, 6, 5, 2, 9, 9, 9, 10, 9, 9, 14, 5, 1, 13, 13, 13, 13, 13, 13, 13, 5], [0, 5, 6, 5, 1, 5, 5, 5, 13, 13, 5, 1, 13, 5, 1, 5, 1, 13, 13, 5, 6, 5, 2, 10, 9, 9, 9, 9, 9, 10, 9, 2, 10, 9, 10, 10, 10, 10, 9], [0, 5, 5, 5, 13, 2, 13, 5, 2, 9, 9, 9, 9, 9, 2, 9, 9, 2, 9, 13, 5, 5, 5, 1, 13, 13, 2, 2, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 2], [0, 2, 5, 5, 2, 13, 13, 5, 5, 2, 9, 10, 10, 9, 9, 9, 10, 9, 2, 9, 13, 5, 5, 13, 2, 9, 13, 13, 9, 9, 13, 9, 9, 2, 9, 9, 9, 9, 9], [0, 5, 5, 5, 5, 2, 9, 13, 2, 5, 1, 13, 13, 13, 2, 9, 9, 2, 9, 9, 9, 5, 5, 13, 5, 1, 2, 2, 9, 9, 2, 9, 9, 13, 9, 9, 9, 9, 2], [0, 5, 6, 5, 5, 5, 1, 5, 5, 5, 13, 13, 13, 13, 5, 1, 13, 5, 1, 13, 2, 13, 6, 2, 13, 9, 5, 5, 1, 2, 9, 2, 10, 9, 10, 10, 10, 10, 9], [0, 2, 5, 5, 2, 5, 13, 5, 5, 6, 13, 2, 2, 9, 5, 13, 2, 9, 2, 9, 13, 13, 5, 5, 2, 9, 9, 9, 9, 13, 9, 5, 1, 2, 9, 9, 9, 9, 9], [0, 5, 2, 5, 5, 5, 13, 5, 5, 5, 13, 5, 5, 1, 5, 13, 5, 1, 5, 1, 2, 9, 6, 2, 5, 1, 13, 13, 13, 2, 9, 2, 2, 13, 2, 10, 10, 10, 9], [0, 5, 5, 5, 5, 6, 13, 5, 2, 5, 13, 5, 5, 13, 2, 9, 5, 2, 9, 9, 13, 9, 5, 5, 5, 13, 2, 10, 9, 13, 2, 9, 9, 9, 5, 1, 13, 13, 2], [0, 5, 5, 5, 5, 6, 13, 5, 2, 5, 13, 5, 5, 13, 6, 1, 5, 2, 9, 9, 13, 9, 5, 5, 5, 13, 6, 2, 9, 9, 14, 9, 9, 9, 5, 13, 13, 13, 6], [0, 5, 6, 5, 5, 5, 13, 5, 5, 5, 13, 5, 5, 13, 5, 13, 5, 5, 1, 13, 2, 9, 2, 2, 5, 13, 5, 5, 1, 2, 9, 2, 2, 9, 2, 2, 10, 10, 13], [0, 5, 5, 5, 5, 6, 13, 5, 2, 5, 13, 5, 5, 13, 6, 13, 5, 2, 9, 9, 5, 1, 5, 5, 5, 13, 6, 6, 13, 5, 2, 9, 9, 9, 9, 9, 9, 9, 2], [0, 2, 5, 5, 2, 5, 13, 5, 5, 2, 9, 2, 2, 9, 13, 9, 6, 5, 2, 9, 9, 9, 9, 13, 6, 13, 5, 5, 13, 5, 5, 1, 13, 2, 9, 9, 9, 9, 9], [0, 5, 2, 5, 5, 5, 13, 5, 5, 5, 1, 5, 5, 1, 5, 13, 5, 5, 5, 1, 2, 9, 2, 2, 5, 13, 5, 5, 13, 6, 5, 2, 2, 13, 2, 10, 10, 10, 9], [0, 5, 6, 5, 5, 5, 13, 5, 5, 5, 13, 5, 5, 13, 5, 13, 5, 5, 5, 13, 2, 9, 2, 2, 9, 9, 13, 5, 13, 6, 5, 2, 2, 9, 14, 2, 10, 10, 9], [0, 2, 5, 5, 2, 5, 13, 5, 5, 6, 13, 2, 2, 9, 13, 9, 6, 5, 6, 13, 5, 1, 5, 5, 2, 9, 9, 13, 9, 5, 5, 5, 5, 2, 9, 13, 9, 9, 9], [0, 5, 5, 5, 5, 2, 9, 13, 2, 5, 13, 5, 5, 1, 2, 9, 13, 2, 5, 13, 5, 13, 5, 5, 5, 1, 2, 2, 9, 13, 6, 5, 5, 5, 1, 5, 13, 13, 2], [0, 5, 6, 5, 5, 5, 1, 5, 5, 5, 13, 5, 5, 13, 5, 1, 5, 5, 5, 13, 6, 13, 6, 2, 5, 13, 5, 5, 1, 2, 5, 2, 6, 5, 2, 2, 2, 10, 13], [0, 5, 5, 2, 5, 5, 2, 2, 13, 5, 2, 9, 13, 2, 13, 2, 9, 13, 5, 2, 13, 2, 13, 5, 5, 2, 13, 13, 2, 13, 5, 5, 5, 5, 5, 5, 5, 1, 5], [0, 5, 5, 5, 5, 6, 5, 5, 2, 13, 5, 1, 5, 5, 2, 9, 9, 2, 5, 5, 5, 5, 5, 5, 5, 5, 2, 10, 9, 9, 2, 5, 5, 5, 5, 5, 5, 13, 2], [0, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 13, 5, 5, 5, 1, 13, 5, 5, 5, 2, 13, 2, 2, 5, 5, 5, 1, 13, 2, 9, 2, 6, 5, 2, 2, 2, 2, 13], [0, 5, 5, 5, 5, 6, 5, 5, 6, 5, 5, 13, 5, 5, 6, 13, 13, 2, 5, 5, 5, 5, 5, 5, 5, 5, 6, 2, 9, 13, 2, 9, 13, 5, 5, 5, 5, 5, 2], [0, 5, 5, 2, 5, 5, 2, 2, 5, 5, 2, 9, 13, 2, 5, 2, 9, 9, 13, 2, 5, 2, 13, 13, 5, 2, 5, 5, 2, 9, 13, 9, 13, 5, 5, 5, 5, 5, 5], [0, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 1, 13, 5, 5, 2, 13, 2, 10, 13, 5, 5, 5, 5, 2, 9, 10, 10, 13, 2, 2, 2, 2, 5], [0, 2, 5, 5, 2, 5, 5, 5, 5, 2, 13, 2, 2, 13, 5, 5, 2, 9, 10, 13, 5, 5, 5, 1, 2, 13, 5, 5, 5, 5, 1, 13, 13, 2, 13, 5, 5, 5, 5], [0, 5, 5, 2, 5, 5, 2, 2, 5, 5, 2, 9, 9, 2, 13, 2, 5, 1, 13, 2, 5, 2, 5, 13, 5, 2, 13, 5, 6, 5, 13, 13, 13, 5, 5, 5, 5, 5, 5], [0, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 1, 13, 5, 5, 5, 5, 13, 13, 5, 2, 13, 2, 2, 13, 5, 5, 5, 5, 6, 13, 2, 2, 5, 2, 2, 2, 2, 13], [0, 5, 5, 2, 5, 5, 2, 2, 5, 5, 6, 13, 13, 6, 5, 2, 5, 13, 13, 6, 5, 2, 13, 13, 13, 6, 5, 5, 6, 5, 13, 5, 5, 5, 5, 5, 5, 5, 5], [0, 5, 5, 5, 5, 6, 5, 5, 2, 13, 5, 13, 13, 5, 2, 13, 5, 2, 9, 13, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 2, 9, 9, 13, 5, 5, 5, 5, 2]], "seq1": "CAACTTCCTGGCGCTATCACTTCTACCATCGTCTGCAGCGT", "seq2": "acgatggtagaagtgatagcgccagttgctccacccct" }
 
-    var seq_10 = [];
-    for (var i = 0 ; i < ojal.seq1.length; i++) {
-    	seq_10.push(ojal.seq1.charAt(i));
-    }
-    var seq_20 = [];
-    for (var i = 0, seq_20; i < ojal.seq2.length; i++) {
-    	seq_20.push(ojal.seq2.charAt(i));
-    }
-    seq_10 = ["-"].concat(seq_10);
-    seq_20 = ["-"].concat(seq_20);
+	var seq_10 = [];
+	for (var i = 0 ; i < ojal.seq1.length; i++) {
+		seq_10.push(ojal.seq1.charAt(i));
+	}
+	var seq_20 = [];
+	for (var i = 0, seq_20; i < ojal.seq2.length; i++) {
+		seq_20.push(ojal.seq2.charAt(i));
+	}
+	seq_10 = ["-"].concat(seq_10);
+	seq_20 = ["-"].concat(seq_20);
 
-    ojal.seq1 = seq_10;
-    ojal.seq2 = seq_20;
+	ojal.seq1 = seq_10;
+	ojal.seq2 = seq_20;
 
 	// ready_to_sketch = ojal;
 
-    sketch_matrixes(ready_to_sketch);
+	sketch_matrixes(ready_to_sketch);
 }

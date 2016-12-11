@@ -94,7 +94,8 @@ var setSvgArea = function (yseq, xseq, symSize) {
 	var padding = 0.05;
 	var row_padding = padding * cell_height
 	var col_padding = padding * cell_width;
-	var color = "blue";
+	var color = "orchid"; /*Iana's favorite color */
+	var color = "orange"; /*George's favorite color */
 	return { svg: { nrow: nrows, ncol: ncols, w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color }, symbol: symSize };
 }
 
@@ -103,7 +104,7 @@ var setSvgArea = function (yseq, xseq, symSize) {
  Sequentially indexed row by row
  */
 var get_cell_coord = function (sa, i, coord) {
-	var col = i % sa.svg.nrow;
+	var col = i % sa.svg.ncol;
 	var row = Math.floor((i / sa.svg.ncol));
 	if (coord == 0 || coord == 2 /*"x" */) {
 		var returnValue = col * sa.cell.w + sa.cell.padding.col + sa.svg.margin.left;
@@ -233,7 +234,6 @@ var DrawRowNames = function (sa, matrix, yseqence) {
 	var names = matrix.selectAll("text.row")
 		.data(yseqence)
 		.enter()
-		.append("g")
 		.append("text");
 
 	names.text(function (d) { return d; })
@@ -254,7 +254,6 @@ var DrawColNames = function (sa, matrix, xseqence) {
 	var names = matrix.selectAll("text.col")
 		.data(xseqence)
 		.enter()
-		.append("g")
 		.append("text");
 
 	names.text(function (d) { return d; })
@@ -270,6 +269,33 @@ var DrawColNames = function (sa, matrix, xseqence) {
 		.attr("font-family", sa.symbol.font)
 		.style("font-size", Math.min(0.3 * sa.cell.h, sa.symbol.font_size));
 }
+
+/* Draw cells */
+var DrawCells = function (sa, matrix, max_score) {
+	matrix.selectAll("g")
+		.append("rect")
+		.attr("x", function (d, i) { return get_cell_coord(sa, i, 0); })
+		.attr("y", function (d, i) { return get_cell_coord(sa, i, 1); })
+		.attr("width", (sa.cell.w - sa.cell.padding.col))
+		.attr("height", (sa.cell.h - sa.cell.padding.row))
+		.style("fill", sa.cell.color)
+		.style("stroke", "white")
+		.attr("active", false)
+		.attr("id", function (d, i) { return "cell_" + i })
+		.style("opacity", function (d) {
+			var s = d['score'];
+			return (((s / max_score) + 0.1) * 0.6);
+		})
+		.on('mouseover', function (d) {
+			d3.select(this).style("stroke", "grey")
+				.style("stroke-width", 2)
+		})
+		.on('mouseout', function (d) {
+			d3.select(this).style("stroke", "white")
+				.style("stroke-width", 1)
+		});
+}
+
 function sketch_matrixes(object_alignment) {
 	var symSize = getMaxSymbolsSize(object_alignment.seq1, "Arial", 12);
 	var sa = setSvgArea(object_alignment.seq1, object_alignment.seq2, symSize);
@@ -302,7 +328,8 @@ function sketch_matrixes(object_alignment) {
 		}
 	}
 	console.log(data);
-
+	if (object_alignment.score !== max_score)
+		console.error("Please check the object_alignment!");
 	/* Create SVG matrix element */
 	var scoreMatrix = d3.select("#main_frame")
 						.append("svg")
@@ -314,5 +341,6 @@ function sketch_matrixes(object_alignment) {
 	DrawScores(sa, scoreMatrix);
 	DrawRowNames(sa, scoreMatrix, object_alignment.seq1);
 	DrawColNames(sa, scoreMatrix, object_alignment.seq2);
+	DrawCells(sa, scoreMatrix, object_alignment.score); /*or max_score */
 }
 
