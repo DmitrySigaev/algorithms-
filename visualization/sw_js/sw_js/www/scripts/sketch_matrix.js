@@ -272,6 +272,11 @@ var DrawColNames = function (sa, matrix, xseqence) {
 
 /* Draw cells */
 var DrawCells = function (sa, matrix, max_score) {
+	var tip = d3.select(".g-tip");
+	var tipMetric = tip.selectAll(".g-tip-metric")
+		.datum(function () { return this.getAttribute("data-name"); });
+
+
 	matrix.selectAll("g")
 		.append("rect")
 		.attr("x", function (d, i) { return get_cell_coord(sa, i, 0); })
@@ -286,13 +291,26 @@ var DrawCells = function (sa, matrix, max_score) {
 			var s = d['score'];
 			return (((s / max_score) + 0.1) * 0.6);
 		})
-		.on('mouseover', function (d) {
+		.on('mouseover', function (d, i) {
 			d3.select(this).style("stroke", "grey")
-				.style("stroke-width", 2)
+				.style("stroke-width", 2);
+
+			tip.style("display", null)
+				.style("top", get_cell_coord(sa, i, 1) - sa.cell.h + "px")
+				.style("left", get_cell_coord(sa, i, 0) + sa.cell.w + "px");
+
+			tipMetric.select(".g-tip-metric-value").text(function (name) {
+				switch (name) {
+					case "j_1_i_1": return d['score'];
+					case "j_i_1": return d['score'] - 1;
+					case "j_1_i": return d['score'] - 2;
+				}
+			});
 		})
 		.on('mouseout', function (d) {
 			d3.select(this).style("stroke", "white")
 				.style("stroke-width", 1)
+			tip.style("display", "none");
 		});
 }
 
