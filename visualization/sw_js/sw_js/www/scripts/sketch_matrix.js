@@ -94,7 +94,7 @@ var setSvgArea = function (yseq, xseq, symSize) {
 	var padding = 0.05;
 	var row_padding = padding * cell_height
 	var col_padding = padding * cell_width;
-	var color = "orchid"; /*Iana's favorite color */
+	var color = "orchid"; /*Iana's favorite color */ /* http://www.w3schools.com/colors/colors_names.asp */
 	var color = "orange"; /*George's favorite color */
 	return { svg: { nrow: nrows, ncol: ncols, w: w, h: h, margin: { left: left_margin, top: top_margin } }, cell: { w: cell_width, h: cell_height, padding: { row: row_padding, col: col_padding }, color: color }, symbol: symSize };
 }
