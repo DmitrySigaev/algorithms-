@@ -493,6 +493,237 @@ var sw_affine_gap_v2 = function (search_profile /* {match/mismatch or submatrix,
 	return [mscore, score_mat, trace_mat];
 }
 
+
+var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var lx = dseq.length;
+	var ly = qseq.length;
+	var score_mat = Matrix(ly, lx);
+	var trace_mat = Matrix(ly, lx);
+	var score_mat2 = Matrix(lx, ly);
+	var trace_mat2 = Matrix(lx, ly);
+	var yy = Matrix(ly, lx);
+	var xx = Matrix(ly, lx);
+
+	var prev_score = [];
+	var prev_yskip = [];
+	var max_score_perv = 0.0;
+	var max_score_perv2 = 0.0;
+	var d_xskipmatch = -100.0;
+	var d_yskipmatch = -100.0;
+
+	for (x = 0; x < lx; ++x) {
+		prev_score[x] = 0;
+		prev_yskip[x] = -100.0;
+	}
+	var d_quality;
+
+	for (y = 0; y < ly; ++y) {
+		for (x = 0; x < lx; ++x) {
+			if (x == 0 || y == 0) { /**/
+				if (x == 0) {
+					xx[y][x] = -100.0;  /*xskipmatch = MS_SCORE_MININF;*/
+				}
+				if (y == 0)
+					yy[y][x] = -100.0; // prev_yskip = [];
+				score_mat[y][x] = 0; // prev_score[x];
+				trace_mat[y][x] = 0;
+				trace_mat2[y][x] = 0;
+				continue;
+
+			} else {
+				var m_last = score_mat[y - 1][x - 1]; // prev_score[x];???
+
+				var ex_last = xx[y][x - 1];
+				var fy_last = yy[y-1][x];
+				var my_last = score_mat[y - 1][x];
+				var mx_last = score_mat[y][x - 1];
+			}
+			var s = substitution.method(substitution, dseq[x], qseq[y]);  /* Substitutional Matrix */
+
+			if (x == 1) {
+				var d_quality = s;
+				var d_lastquality = d_quality;
+				max_score_perv = (s > max_score_perv2) ? s : max_score_perv; /*checkbest_m(v, 1, y + 1, max_v);*/
+				d_xskipmatch = -10000.0; /*xskipmatch = MS_SCORE_MININF;*/
+			}
+			else {
+
+				d_score = s;               // score = prof_line_p[pre->nseq];
+				d_quality = prev_score[x]; // quality = pre->prequal;
+				d_yskipmatch = prev_yskip[x]; // yskipmatch = pre->yskipmatch;
+
+				if (d_yskipmatch <= 0) {
+					if (d_xskipmatch <= 0) {
+						/* yskipmatch <= 0 and xskipmatch <= 0 */
+						if (d_quality <= 0) {
+							d_quality = 0;
+						} else {
+							if (d_quality > gapOpen/*pentest*/) {
+								d_xskipmatch = d_quality + gapOpen;
+								prev_yskip[x] = d_quality + gapOpen /* gapOpenY == penopen1 */;
+							}
+							max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, pre - prev_line, y, max_v) */
+						}
+					} else {
+						/* yskipmatch <= 0 && xskipmatch > 0 */
+						// 1 - x
+						if (d_quality <= 0) {
+							d_quality = d_xskipmatch;
+							d_xskipmatch += gapExt;
+						} else {
+							var d_bestjumpY = d_quality + gapOpen; /*penopen1*/
+							prev_yskip[x] = d_bestjumpY;
+							if (d_quality < d_xskipmatch) { /* q<0 handled here */
+								d_quality = d_xskipmatch;
+								d_xskipmatch += gapExt;  /* assuming penopen<penext @@ test input */
+							} else {
+								var bestjumpX = d_quality + gapOpen;
+								d_xskipmatch += gapExt;
+								if (bestjumpX > d_xskipmatch) d_xskipmatch = bestjumpX;
+								max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, pre - prev_line, y, max_v) */
+							}
+						}
+
+					}
+				} else {
+					/* yskip > 0 */
+					if (d_xskipmatch <= 0) {
+						/* yest > 0 and xskipmatch <= 0 */
+						// 1 - y 
+						if (d_quality <= 0) {
+							d_quality = d_yskipmatch;
+							d_yskipmatch += gapExt; // sp->gapExt1;
+						}
+						else {
+							var bestjumpX = d_quality + gapOpen;
+							/*if (bestjump > 0)*/ d_xskipmatch = bestjumpX; /*becames > 0 or steal < 0 in case d_quality < sp->gapOpen */
+
+							if (d_quality < d_yskipmatch) { /* q<0 handled here */
+								d_quality = d_yskipmatch;
+								d_yskipmatch += gapExt; // penext1; /* assuming penopen1<penext1 */
+							}
+							else {
+								var bestjumpY = d_quality + gapOpen; // penopen1;
+								d_yskipmatch += gapExt;
+								if (bestjumpY > d_yskipmatch) d_yskipmatch = bestjumpY;
+								max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, pre - prev_line, y, max_v) */
+							}
+						}
+					} else {
+						/* xskipmatch > 0 && yskipmatch > 0 */
+						if (d_quality < d_xskipmatch) {
+							if (d_quality < d_yskipmatch) { /* q<0 handled here */
+								if (d_yskipmatch > d_xskipmatch)
+									d_quality = d_yskipmatch;
+								else
+									d_quality = d_xskipmatch;
+								d_yskipmatch += gapExt; //penext1; /* assuming penopen1<penext1 */
+							}
+							else {
+								var bestjumpY = d_quality + gapOpen;//penopen1;
+								d_yskipmatch += gapExt;// penext1;
+								if (bestjumpY > d_yskipmatch) d_yskipmatch = bestjumpY;
+								d_quality = d_xskipmatch;
+							}
+							d_xskipmatch += gapExt;// penext;  /* assuming penopen<penext */
+						} else {
+							/* quality>=xskipmatch */
+							var bestjumpX = d_quality + gapOpen;
+							d_xskipmatch += gapExt;
+							if (bestjumpX > d_xskipmatch) d_xskipmatch = bestjumpX;
+							if (d_quality < d_yskipmatch) {
+								d_quality = d_yskipmatch;
+								d_yskipmatch += gapExt; // penext1; /* assuming penopen1<penext1 */
+							} else {
+								var bestjumpY = d_quality + gapOpen;// penopen1;
+								d_yskipmatch += gapExt;// penext1;
+								if (bestjumpY > d_yskipmatch) d_yskipmatch = bestjumpY;
+								max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, pre - prev_line, y, max_v) */
+							}
+						} /* quality>=xskipmatch */
+					} /* yskipmatch test */
+					prev_yskip[x] = d_yskipmatch;
+				} /* xskipmatch test */
+
+				d_quality += d_score;
+				prev_score[x] = d_lastquality;
+				d_lastquality = d_quality;
+			}
+			var m_new = m_last + s;
+			var mx_new = mx_last + gapOpen; /* */
+			var my_new = my_last + gapOpen;
+			xx[y][x] = Math.max(ex_last + gapExt, mx_new, 0);
+			yy[y][x] = Math.max(fy_last + gapExt, my_new, 0);
+	//		ee[i][j] = Math.max(e_new, l_new);
+	//		ff[j][i] = Math.max(f_new, u_new);
+
+			score_mat[y][x] = Math.max(m_new, xx[y][x], yy[y][x], 0);
+			if (score_mat[y][x] == m_new && !is_match(dseq[x], qseq[y])) {
+				trace_mat[y][x] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			}
+			if (score_mat[y][x] == xx[y][x])
+				trace_mat[y][x] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (score_mat[y][x] == yy[y][x])
+				trace_mat[y][x] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (score_mat[y][x] == m_new && is_match(dseq[x], qseq[y]))
+				trace_mat[y][x] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (score_mat[y][x] == 0)
+				trace_mat[y][x] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+			var arr = [d_new, ff[i][j], ee[i][j], 0];
+			var trace = arr.indexOf(Math.max.apply(Math, arr));
+			trace_mat[i][j] = trace;
+			*/
+
+			var test = Math.max(d_quality, d_yskipmatch, d_xskipmatch, 0);
+			if (test == d_quality && !is_match(dseq[x], qseq[y])) {
+				trace_mat2[x][y] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			}
+			if (test == d_xskipmatch)
+				trace_mat2[x][y] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (test == d_yskipmatch)
+				trace_mat2[x][y] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (test == d_quality && is_match(dseq[x], qseq[y]))
+				trace_mat2[x][y] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (test == 0)
+				trace_mat2[x][y] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+
+		}
+		if (y) {
+			max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, seqLen, y+1, max_v) */
+			for (x = 0; x < lx-1; ++x)
+				score_mat2[x][y] = prev_score[x + 1];
+			score_mat2[lx - 1][y] = d_quality;
+
+		}
+	}
+
+	for (x = 0; x < lx; ++x) {
+		max_score_perv = (prev_score[x] > max_score_perv) ? prev_score[x] : max_score_perv; /* checkbest_m(quality, x, yprofLen, max_v) */
+		if (x != (lx - 1))
+			score_mat2[x][y] = prev_score[x + 1];
+		else
+			score_mat2[lx - 1][y] = max_score_perv;
+
+	}
+
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < ly; ++i) {
+		for (j = 0; j < lx; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	//	return [mscore, score_mat, trace_mat];
+	return [max_score_perv, score_mat2, trace_mat2];
+}
+
 function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	var sequence_1 = seq_1.split(" ");
 	var sequence_2 = seq_2.split(" ");
@@ -511,8 +742,12 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	//    ret = sw_affine_gotoh_gap(search_profile, sequence_1, sequence_2);
 	//    console.log('max score of affine: ' + ret[0]);
 
+// var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+//	ret = sw_affine_gap_gotoh_v2(search_profile, sequence_1, sequence_2);
+//	console.log('max score of affine: ' + ret[0]);
+
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	ret = sw_affine_gap_gotoh_v2(search_profile, sequence_1, sequence_2);
+	ret = sw_affine_gap_genc(search_profile, sequence_1, sequence_2);
 	console.log('max score of affine: ' + ret[0]);
 
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
