@@ -503,6 +503,7 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
 	var score_mat = Matrix(ly, lx);
 	var trace_mat = Matrix(ly, lx);
 	var score_mat2 = Matrix(lx, ly);
+	var score_mat3 = Matrix(lx, ly);
 	var trace_mat2 = Matrix(lx, ly);
 	var yy = Matrix(ly, lx);
 	var xx = Matrix(ly, lx);
@@ -679,6 +680,7 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
 			*/
 
 			var test = Math.max(d_quality, d_yskipmatch, d_xskipmatch, 0);
+			score_mat3[x][y] = test;
 			if (test == d_quality && !is_match(dseq[x], qseq[y])) {
 				trace_mat2[x][y] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
 			}
