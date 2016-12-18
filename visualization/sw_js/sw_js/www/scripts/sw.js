@@ -395,7 +395,7 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
 				if (j == 0)
 					ff[i][j] = -1000;
 				score_mat[i][j] = 0;
-				trace_mat[i][j] = 3;
+				trace_mat[i][j] = 0;
 				continue;
 
 			} else {
@@ -412,10 +412,26 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
 			ee[i][j] = Math.max(ey_last + gapExt, my_new + gapExt);
 			ff[i][j] = Math.max(fx_last + gapExt, mx_new + gapExt);
 
-			score_mat[i][j] = Math.max(m_new, /*y*/ee[i - 1][j - 1] + s, /*x*/ff[i - 1][j - 1] + s, 0);
-			var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
-			var trace = arr.indexOf(Math.max.apply(Math, arr));
-			trace_mat[i][j] = trace;
+			var y = ee[i - 1][j - 1] + s;
+			var x = ff[i - 1][j - 1] + s;
+			score_mat[i][j] = Math.max(m_new, y/*y*//*ee[i - 1][j - 1] + s*/, x  /*x*//*ff[i - 1][j - 1] + s*/, 0);
+
+			if (score_mat[i][j] == m_new && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (score_mat[i][j] == m_new && !is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (score_mat[i][j] == x)
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (score_mat[i][j] == y)
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (score_mat[i][j] == 0)
+				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+
+            var trace = arr.indexOf(Math.max.apply(Math, arr));
+            trace_mat[i][j] = trace;
+            */
 		}
 	}
 	/* console.log(score_mat); */
@@ -430,6 +446,7 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
 
 	return [mscore, score_mat, trace_mat];
 }
+
 
 /*
    Yet another the Smith-Waterman algorithm implementation, which is described in:
@@ -752,9 +769,9 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	ret = sw_affine_gap_genc(search_profile, sequence_1, sequence_2);
 	console.log('max score of affine: ' + ret[0]);
 
-	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	//    ret = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
-	//    console.log('max score of v1: ' + ret[0]);
+	 var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	 ret2 = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
+	    console.log('max score of v1: ' + ret[0]);
 
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	//    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
