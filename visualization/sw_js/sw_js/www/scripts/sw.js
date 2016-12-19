@@ -761,17 +761,27 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	//    ret = sw_affine_gotoh_gap(search_profile, sequence_1, sequence_2);
 	//    console.log('max score of affine: ' + ret[0]);
 
-// var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-//	ret = sw_affine_gap_gotoh_v2(search_profile, sequence_1, sequence_2);
-//	console.log('max score of affine: ' + ret[0]);
+	// var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	//	ret = sw_affine_gap_gotoh_v2(search_profile, sequence_1, sequence_2);
+	//	console.log('max score of affine: ' + ret[0]);
 
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	ret = sw_affine_gap_genc(search_profile, sequence_1, sequence_2);
 	console.log('max score of affine: ' + ret[0]);
 
-	 var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	 ret2 = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
-	    console.log('max score of v1: ' + ret[0]);
+	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	ret2 = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
+	console.log('max score of v1: ' + ret[0]);
+
+	var lx = sequence_1.length;
+	var ly = sequence_2.length;
+	var score_mat3 = Matrix(lx, ly);
+
+	for (y = 0; y < ly; ++y) {
+		for (x = 0; x < lx; ++x) {
+			ret[1][x][y] = ret[1][x][y] -ret2[1][x][y];
+		}
+	}
 
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	//    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
