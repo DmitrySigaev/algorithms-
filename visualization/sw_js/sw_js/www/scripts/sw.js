@@ -391,9 +391,9 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
                but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
 			if (i == 0 || j == 0) { /**/
 				if (i == 0)
-					ee[i][j] = -1000;
+					ee[i][j] = 0;//-1000;
 				if (j == 0)
-					ff[i][j] = -1000;
+					ff[i][j] = 0;//-1000;
 				score_mat[i][j] = 0;
 				trace_mat[i][j] = 0;
 				continue;
@@ -409,8 +409,8 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
 			var m_new = m_last + s;
 			var mx_new = mx_last + gapOpen;
 			var my_new = my_last + gapOpen;
-			ee[i][j] = Math.max(ey_last + gapExt, my_new + gapExt);
-			ff[i][j] = Math.max(fx_last + gapExt, mx_new + gapExt);
+			ee[i][j] = Math.max(ey_last + gapExt, my_new);
+			ff[i][j] = Math.max(fx_last + gapExt, mx_new);
 
 			var y = ee[i - 1][j - 1] + s;
 			var x = ff[i - 1][j - 1] + s;
@@ -555,7 +555,7 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
 				var m_last = score_mat[y - 1][x - 1]; // prev_score[x];???
 
 				var ex_last = xx[y][x - 1];
-				var fy_last = yy[y-1][x];
+				var fy_last = yy[y - 1][x];
 				var my_last = score_mat[y - 1][x];
 				var mx_last = score_mat[y][x - 1];
 			}
@@ -675,8 +675,8 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
 			var my_new = my_last + gapOpen;
 			xx[y][x] = Math.max(ex_last + gapExt, mx_new, 0);
 			yy[y][x] = Math.max(fy_last + gapExt, my_new, 0);
-	//		ee[i][j] = Math.max(e_new, l_new);
-	//		ff[j][i] = Math.max(f_new, u_new);
+			//		ee[i][j] = Math.max(e_new, l_new);
+			//		ff[j][i] = Math.max(f_new, u_new);
 
 			score_mat[y][x] = Math.max(m_new, xx[y][x], yy[y][x], 0);
 			if (score_mat[y][x] == m_new && !is_match(dseq[x], qseq[y])) {
@@ -713,7 +713,7 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
 		}
 		if (y) {
 			max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, seqLen, y+1, max_v) */
-			for (x = 0; x < lx-1; ++x)
+			for (x = 0; x < lx - 1; ++x)
 				score_mat2[x][y] = prev_score[x + 1];
 			score_mat2[lx - 1][y] = d_quality;
 
@@ -779,9 +779,24 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 
 	for (y = 0; y < ly; ++y) {
 		for (x = 0; x < lx; ++x) {
-			ret[1][x][y] = ret[1][x][y] -ret2[1][x][y];
+			if (ret[1][x][y] < 0.0)
+				ret[1][x][y] = 0.0;
 		}
 	}
+	var max_score_check = 0.0;
+	for (y = 0; y < ly; ++y) {
+		for (x = 0; x < lx; ++x) {
+			ret[1][x][y] = ret[1][x][y] - ret2[1][x][y];
+			if (Math.abs(ret[1][x][y]) < 0.00000001)
+				ret[1][x][y] = 0.0;
+			if (max_score_check < ret[1][x][y])
+				max_score_check = ret[1][x][y];
+		}
+	}
+	console.log(max_score_check);
+
+	if (max_score_check <= 0)
+		return;
 
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	//    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
