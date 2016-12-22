@@ -771,9 +771,13 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	ret2 = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
-	console.log('max score of v1: ' + ret[0]);
+	console.log('max score of v1: ' + ret2[0]);
 
-	if (0) { // compare score matrix
+//	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+//	ret2 = sw_affine_gap_sg(search_profile, sequence_1, sequence_2);
+//	console.log('max score of v1: ' + ret2[0]);
+
+	if (1) { // compare score matrix
 		var lx = sequence_1.length;
 		var ly = sequence_2.length;
 
@@ -790,8 +794,8 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 				ret[1][x][y] = ret[1][x][y] - ret2[1][x][y];
 				if (Math.abs(ret[1][x][y]) < 0.00000001)
 					ret[1][x][y] = 0.0;
-				if (max_score_check < ret[1][x][y])
-					max_score_check = ret[1][x][y];
+				if (max_score_check < Math.abs(ret[1][x][y]))
+					max_score_check = Math.abs(ret[1][x][y]);
 			}
 		}
 		console.log(max_score_check);
