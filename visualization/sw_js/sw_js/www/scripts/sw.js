@@ -743,6 +743,102 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
 	return [max_score_perv, score_mat2, trace_mat2];
 }
 
+/*
+   Other the Smith-Waterman algorithm implementation, which is described in:
+   http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf
+*/
+var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var h = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
+	var er;
+	var er0 = [];
+	var er1 = [];
+	var fr0 = [];
+	var fr1 = [];
+
+	for (var j = 0; j < l2; ++j) {
+		er1[j] = 0;
+		fr1[j] = 0;
+	}
+
+	for (var i = 0; i < l1; ++i) {
+		fr1[0] = 0;
+		er = 0;
+		for (var j = 0; j < l2; ++j) {
+			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
+               but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+			if (i == 0 || j == 0) { /**/
+				if (i == 0) {
+					ee[i][j] = 0;//-1000;
+				}
+				if (j == 0)
+					ff[i][j] = 0;//-1000;
+				h[i][j] = 0;
+				trace_mat[i][j] = 0;
+				continue;
+			}
+			var m_last = h[i - 1][j - 1];
+			var mx_last = h[i - 1][j];
+			var my_last = h[i][j - 1];
+
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var m_new = m_last + s;
+			var mx_new = mx_last + gapOpen;
+			var my_new = my_last + gapOpen;
+			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
+
+			var y = er0[j - 1] + s;
+			er1[j - 1] = er;
+			var x = fr0[j - 1] + s;
+
+			h[i][j] = Math.max(m_new, y/*y*//*ee[i - 1][j - 1] + s*/, x  /*x*//*ff[i - 1][j - 1] + s*/, 0);
+
+			er = ee[i][j] = Math.max(er + gapExt, my_new);
+
+			if (h[i][j] == m_new && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (h[i][j] == m_new && !is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (h[i][j] == x)
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (h[i][j] == y)
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (h[i][j] == 0)
+				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+
+            var trace = arr.indexOf(Math.max.apply(Math, arr));
+            trace_mat[i][j] = trace;
+            */
+		}
+		er0 = er1;
+
+		for (var j = 0; j < l2; ++j) {
+			fr0[j] = fr1[j];
+		}
+//		fr0 = fr1;
+	}
+	/* console.log(score_mat); */
+	var mscore = h[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < h[i][j])
+				mscore = h[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, h, trace_mat];
+}
+
 function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	var sequence_1 = seq_1.split(" ");
 	var sequence_2 = seq_2.split(" ");
@@ -772,10 +868,18 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	ret2 = sw_affine_gap_v1(search_profile, sequence_1, sequence_2);
 	console.log('max score of v1: ' + ret2[0]);
+	ret = ret2;
+	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	ret3 = sw_affine_gap_sg(search_profile, sequence_1, sequence_2);
+	console.log('max score of opt: ' + ret3[0]);
+	ret2 = ret3;
+	var search_profile = { S: subtitution, gapOpen: -1.0, gapExt: 0.0 };  /*define search profile*/
+	ret4 = sw_affine_gap_sg(search_profile, sequence_1, sequence_2);
+	console.log('max score of opt -1.0. 0.0: ' + ret4[0]);
 
-//	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-//	ret2 = sw_affine_gap_sg(search_profile, sequence_1, sequence_2);
-//	console.log('max score of v1: ' + ret2[0]);
+
+	//if (ret2[0] == ret[0])
+	//	return;
 
 	if (1) { // compare score matrix
 		var lx = sequence_1.length;
@@ -785,6 +889,12 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 			for (x = 0; x < lx; ++x) {
 				if (ret[1][x][y] < 0.0)
 					ret[1][x][y] = 0.0;
+				else
+					ret[1][x][y] = ret[1][x][y].toFixed(5)
+				if (ret2[1][x][y] < 0.0)
+					ret2[1][x][y] = 0.0;
+				else
+					ret2[1][x][y] = ret2[1][x][y].toFixed(5)
 			}
 		}
 
@@ -798,11 +908,15 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 					max_score_check = Math.abs(ret[1][x][y]);
 			}
 		}
-		console.log(max_score_check);
+		console.log("check: "+max_score_check);
 
 		if (max_score_check <= 0)
 			return;
 	}
+
+
+	return;
+
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	//    ret = sw_affine_gap_v2(search_profile, sequence_1, sequence_2);
 	//    console.log('max score of v2: ' + ret[0]);
