@@ -792,14 +792,11 @@ var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
 			var m_new = m_last + s;
 			var mx_new = mx_last + gapOpen;
 			var my_new = my_last + gapOpen;
+
+			h[i][j] = Math.max(m_new, er0[j - 1] + s, fr0[j - 1] + s, 0);
+
 			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
-
-			var y = er0[j - 1] + s;
 			er1[j - 1] = er;
-			var x = fr0[j - 1] + s;
-
-			h[i][j] = Math.max(m_new, y/*y*//*ee[i - 1][j - 1] + s*/, x  /*x*//*ff[i - 1][j - 1] + s*/, 0);
-
 			er = ee[i][j] = Math.max(er + gapExt, my_new);
 
 			if (h[i][j] == m_new && is_match(dseq[i], qseq[j]))
@@ -820,7 +817,6 @@ var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
             */
 		}
 		er0 = er1;
-
 		for (var j = 0; j < l2; ++j) {
 			fr0[j] = fr1[j];
 		}
