@@ -782,18 +782,19 @@ var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
 					ff[i][j] = 0;//-1000;
 				h[i][j] = 0;
 				trace_mat[i][j] = 0;
+				hr = 0;
 				continue;
 			}
 			var m_last = h[i - 1][j - 1];
 			var mx_last = h[i - 1][j];
-			var my_last = h[i][j - 1];
+	//		var my_last = h[i][j - 1];
 
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
 			var m_new = m_last + s;
 			var mx_new = mx_last + gapOpen;
-			var my_new = my_last + gapOpen;
+			var my_new = hr + gapOpen;
 
-			h[i][j] = Math.max(m_new, er0[j - 1] + s, fr0[j - 1] + s, 0);
+			hr = h[i][j] = Math.max(m_new, er0[j - 1] + s, fr0[j - 1] + s, 0);
 
 			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
 			er1[j - 1] = er;
