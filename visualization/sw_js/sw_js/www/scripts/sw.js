@@ -448,6 +448,81 @@ var sw_affine_gap_v1 = function (search_profile, dseq, qseq) {
 }
 
 
+var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var score_mat = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
+
+	for (i = 0; i < l1; ++i) {
+
+		for (j = 0; j < l2; ++j) {
+
+			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
+               but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+			if (i == 0 || j == 0) { /**/
+				if (i == 0)
+					ee[i][j] = 0;//-1000;
+				if (j == 0)
+					ff[i][j] = 0;//-1000;
+				score_mat[i][j] = 0;
+				trace_mat[i][j] = 0;
+				continue;
+
+			} else {
+				var ey_last = ee[i][j - 1];
+				var fx_last = ff[i - 1][j];
+				var m_last = score_mat[i - 1][j - 1];
+				var mx_last = score_mat[i - 1][j];
+				var my_last = score_mat[i][j - 1];
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var m_new = m_last + s;
+			var mx_new = mx_last + gapOpen;
+			var my_new = my_last + gapOpen;
+			ee[i][j] = Math.max(ey_last + gapExt, my_new);
+			ff[i][j] = Math.max(fx_last + gapExt, mx_new);
+
+			var y = ee[i - 1][j - 1] + s;
+			var x = ff[i - 1][j - 1] + s;
+			score_mat[i][j] = Math.max(m_new, y/*y*//*ee[i - 1][j - 1] + s*/, x  /*x*//*ff[i - 1][j - 1] + s*/, 0);
+
+			if (score_mat[i][j] == m_new && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (score_mat[i][j] == m_new && !is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (score_mat[i][j] == x)
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (score_mat[i][j] == y)
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (score_mat[i][j] == 0)
+				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+
+            var trace = arr.indexOf(Math.max.apply(Math, arr));
+            trace_mat[i][j] = trace;
+            */
+		}
+	}
+	/* console.log(score_mat); */
+	var mscore = score_mat[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < score_mat[i][j])
+				mscore = score_mat[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, score_mat, trace_mat, ee, ff];
+}
+
 /*
    Yet another the Smith-Waterman algorithm implementation, which is described in:
    http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf
@@ -747,7 +822,7 @@ var sw_affine_gap_genc = function (search_profile /* {match/mismatch or submatri
    Other the Smith-Waterman algorithm implementation, which is described in:
    http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf
 */
-var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
+var sw_affine_gap_sg_v1 = function (search_profile, dseq, qseq) {
 	var gapOpen = search_profile.gapOpen || -1;
 	var gapExt = search_profile.gapExt || 0;
 	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
@@ -762,10 +837,13 @@ var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
 	var er1 = [];
 	var fr0 = [];
 	var fr1 = [];
+	var hr0 = [];
+	var hr1 = [];
 
 	for (var j = 0; j < l2; ++j) {
 		er1[j] = 0;
 		fr1[j] = 0;
+		hr1[j] = 0;
 	}
 
 	for (var i = 0; i < l1; ++i) {
@@ -785,30 +863,25 @@ var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
 				hr = 0;
 				continue;
 			}
-			var m_last = h[i - 1][j - 1];
-			var mx_last = h[i - 1][j];
-	//		var my_last = h[i][j - 1];
-
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
-			var m_new = m_last + s;
-			var mx_new = mx_last + gapOpen;
+			var mx_new = hr0[j] + gapOpen;
 			var my_new = hr + gapOpen;
 
-			hr = h[i][j] = Math.max(m_new, er0[j - 1] + s, fr0[j - 1] + s, 0);
+			hr1[j] = hr = h[i][j] = Math.max(hr0[j - 1] + s, er0[j - 1] + s, fr0[j - 1] + s, 0);
 
 			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
 			er1[j - 1] = er;
 			er = ee[i][j] = Math.max(er + gapExt, my_new);
 
-			if (h[i][j] == m_new && is_match(dseq[i], qseq[j]))
+			if (h == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
-			if (h[i][j] == m_new && !is_match(dseq[i], qseq[j]))
+			if (h == (hr0[j - 1] + s) && !is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
-			if (h[i][j] == x)
+			if (h == fr0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
-			if (h[i][j] == y)
+			if (h == er0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
-			if (h[i][j] == 0)
+			if (h == 0)
 				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 			/*
             var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
@@ -821,7 +894,104 @@ var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
 		for (var j = 0; j < l2; ++j) {
 			fr0[j] = fr1[j];
 		}
-//		fr0 = fr1;
+		for (var j = 0; j < l2; ++j) {
+			hr0[j] = hr1[j];
+		}
+		//		fr0 = fr1;
+	}
+	/* console.log(score_mat); */
+	var mscore = h[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < h[i][j])
+				mscore = h[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, h, trace_mat];
+}
+
+/*
+   Other the Smith-Waterman algorithm implementation, which is described in:
+   http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf
+*/
+var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var h = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
+	var er;
+	var er0 = [];
+	var er1 = [];
+	var fr0 = [];
+	var fr1 = [];
+	var hr0 = [];
+	var hr1 = [];
+
+	for (var j = 0; j < l2; ++j) {
+		er1[j] = 0;
+		fr1[j] = 0;
+		hr1[j] = 0;
+	}
+
+	for (var i = 0; i < l1; ++i) {
+		fr1[0] = 0;
+		er = 0;
+		for (var j = 0; j < l2; ++j) {
+			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
+               but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+			if (i == 0 || j == 0) { /**/
+				if (i == 0) {
+					ee[i][j] = 0;//-1000;
+				}
+				if (j == 0)
+					ff[i][j] = 0;//-1000;
+				h[i][j] = 0;
+				trace_mat[i][j] = 0;
+				hr = 0;
+				continue;
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var mx_new = hr0[j] + gapOpen;
+			var my_new = hr + gapOpen;
+
+			hr1[j] = hr = h[i][j] = Math.max(hr0[j - 1] + s, er0[j - 1] + s, fr0[j - 1] + s, 0);
+
+			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
+			er1[j - 1] = er;
+			er = ee[i][j] = Math.max(er + gapExt, my_new);
+
+			if (h == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (h == (hr0[j - 1] + s) && !is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (h == fr0[j - 1] + s)
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (h == er0[j - 1] + s)
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (h == 0)
+				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+
+            var trace = arr.indexOf(Math.max.apply(Math, arr));
+            trace_mat[i][j] = trace;
+            */
+		}
+		er0 = er1;
+		for (var j = 0; j < l2; ++j) {
+			fr0[j] = fr1[j];
+		}
+		for (var j = 0; j < l2; ++j) {
+			hr0[j] = hr1[j];
+		}
+		//		fr0 = fr1;
 	}
 	/* console.log(score_mat); */
 	var mscore = h[0][0];
@@ -905,7 +1075,7 @@ function CalculateSWandDraw(seq_1, seq_2, matrix, gapOpen, gapExt) {
 					max_score_check = Math.abs(ret[1][x][y]);
 			}
 		}
-		console.log("check: "+max_score_check);
+		console.log("check: " + max_score_check);
 
 		if (max_score_check <= 0)
 			return;
