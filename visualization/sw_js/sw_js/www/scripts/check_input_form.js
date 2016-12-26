@@ -18,7 +18,7 @@ function handleForm(event) {
 	var matrix = document.getElementById("matrix_ident").value;
 	var gapOpen = parseFloat(document.getElementById("gapOpen").value);
 	var gapExt = parseFloat(document.getElementById("gapExt").value);
-	CalculateSWandDraw(seq_10.join(' '), seq_20.join(' '), matrix, gapOpen, gapExt);
+	CalculateSWandDrawComp(seq_10.join(' '), seq_20.join(' '), matrix, gapOpen, gapExt);
 	return false;
 }
 
