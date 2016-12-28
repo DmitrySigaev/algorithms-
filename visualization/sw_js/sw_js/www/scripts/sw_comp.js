@@ -139,15 +139,15 @@ var sw_affine_gap_tm_comp = function (search_profile, dseq, qseq) {
 	var gapOpen = search_profile.gapOpen || -1;
 	var gapExt = search_profile.gapExt || 0;
 	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
-	var l1 = dseq.length;
-	var l2 = qseq.length;
-	var hm = Matrix(l1, l2);
-	var tm = Matrix(l1, l2);
-	var ee = Matrix(l1, l2);
-	var ff = Matrix(l1, l2);
+	var lx = dseq.length;
+	var ly = qseq.length;
+	var hm = Matrix(lx, ly);
+	var tm = Matrix(lx, ly);
+	var ee = Matrix(lx, ly);
+	var ff = Matrix(lx, ly);
 
-	for (j = 0; j < l2; ++j) {
-		for (i = 0; i < l1; ++i) {
+	for (j = 0; j < ly; ++j) {
+		for (i = 0; i < lx; ++i) {
 
 			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
                but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
@@ -195,8 +195,8 @@ var sw_affine_gap_tm_comp = function (search_profile, dseq, qseq) {
 
 	/* console.log(hm); */
 	var mscore = hm[0][0];
-	for (i = 0; i < l1; ++i) {
-		for (j = 0; j < l2; ++j) {
+	for (i = 0; i < lx; ++i) {
+		for (j = 0; j < ly; ++j) {
 			if (mscore < hm[i][j])
 				mscore = hm[i][j];
 		}
