@@ -70,12 +70,11 @@ var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
 	var l1 = dseq.length;
 	var l2 = qseq.length;
 	var hm = Matrix(l1, l2);
-	var trace_mat = Matrix(l1, l2);
+	var tm = Matrix(l1, l2);
 	var ee = Matrix(l1, l2);
 	var ff = Matrix(l1, l2);
 
 	for (i = 0; i < l1; ++i) {
-
 		for (j = 0; j < l2; ++j) {
 
 			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
@@ -86,7 +85,7 @@ var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
 				if (j == 0)
 					ff[i][j] = 0;
 				hm[i][j] = 0;
-				trace_mat[i][j] = 0;
+				tm[i][j] = 0;
 				continue;
 
 			}
@@ -109,23 +108,19 @@ var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
 			hm[i][j] = Math.max(m_new, y/*y*//*ee[i - 1][j - 1] + s*/, x  /*x*//*ff[i - 1][j - 1] + s*/, 0);
 
 			if (hm[i][j] == m_new && is_match(dseq[i], qseq[j]))
-				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+				tm[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
 			if (hm[i][j] == m_new && !is_match(dseq[i], qseq[j]))
-				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+				tm[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
 			if (hm[i][j] == x)
-				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+				tm[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
 			if (hm[i][j] == y)
-				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+				tm[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
 			if (hm[i][j] == 0)
-				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
-			/*
-            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+				tm[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 
-            var trace = arr.indexOf(Math.max.apply(Math, arr));
-            trace_mat[i][j] = trace;
-            */
 		}
 	}
+
 	/* console.log(hm); */
 	var mscore = hm[0][0];
 	for (i = 0; i < l1; ++i) {
@@ -136,9 +131,80 @@ var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
 	}
 	/* console.log(mscore); */
 
-	return [mscore, hm, trace_mat, ee, ff];
+	return [mscore, hm, tm, ee, ff];
 }
 
+
+var sw_affine_gap_tm_comp = function (search_profile, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var hm = Matrix(l1, l2);
+	var tm = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
+
+	for (j = 0; j < l2; ++j) {
+		for (i = 0; i < l1; ++i) {
+
+			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
+               but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+			if (i == 0 || j == 0) { /**/
+				if (i == 0)
+					ee[i][j] = 0;
+				if (j == 0)
+					ff[i][j] = 0;
+				hm[i][j] = 0;
+				tm[i][j] = 0;
+				continue;
+
+			}
+
+			var ey_last = ee[i][j - 1];
+			var fx_last = ff[i - 1][j];
+			var m_last = hm[i - 1][j - 1];
+			var mx_last = hm[i - 1][j];
+			var my_last = hm[i][j - 1];
+
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var m_new = m_last + s;
+			var mx_new = mx_last + gapOpen;
+			var my_new = my_last + gapOpen;
+			ee[i][j] = Math.max(ey_last + gapExt, my_new);
+			ff[i][j] = Math.max(fx_last + gapExt, mx_new);
+
+			var y = ee[i - 1][j - 1] + s;
+			var x = ff[i - 1][j - 1] + s;
+			hm[i][j] = Math.max(m_new, y/*y*//*ee[i - 1][j - 1] + s*/, x  /*x*//*ff[i - 1][j - 1] + s*/, 0);
+
+			if (hm[i][j] == m_new && is_match(dseq[i], qseq[j]))
+				tm[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (hm[i][j] == m_new && !is_match(dseq[i], qseq[j]))
+				tm[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (hm[i][j] == x)
+				tm[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (hm[i][j] == y)
+				tm[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (hm[i][j] == 0)
+				tm[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+
+		}
+	}
+
+	/* console.log(hm); */
+	var mscore = hm[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < hm[i][j])
+				mscore = hm[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, hm, tm, ee, ff];
+}
 
 
 var sw_affine_gap_genc_comp = function (search_profile /* {match/mismatch or submatrix, gapOpen, gapExt } */, dseq, qseq) {
@@ -478,17 +544,6 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	sequence_1 = ["-"].concat(sequence_1);
 	sequence_2 = ["-"].concat(sequence_2);
 
-	//    var search_profile = { S: subtitution, gap: gapOpen }; /*define search profile*/
-	//    ret = sw_linear_gap(search_profile, sequence_1, sequence_2);
-	//console.log('max score: ' + ret[0]);
-
-	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	//    ret = sw_affine_gotoh_gap(search_profile, sequence_1, sequence_2);
-	//    console.log('max score of affine: ' + ret[0]);
-
-	// var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	//	ret = sw_affine_gap_gotoh_v2(search_profile, sequence_1, sequence_2);
-	//	console.log('max score of affine: ' + ret[0]);
 
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
 	ret = sw_affine_gap_genc_comp(search_profile, sequence_1, sequence_2);
@@ -498,14 +553,15 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	ret2 = sw_affine_gap_v1_comp(search_profile, sequence_1, sequence_2);
 	console.log('max score of v1: ' + ret2[0]);
 	ret = ret2;
+
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	ret3 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
-	console.log('max score of opt: ' + ret3[0]);
+	ret3 = sw_affine_gap_tm_comp(search_profile, sequence_1, sequence_2);
+	console.log('max score of tm: ' + ret3[0]);
 	ret2 = ret3;
 
 	var search_profile = { S: subtitution, gapOpen: -1.0, gapExt: 0.0 };  /*define search profile*/
-	ret4 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
-	console.log('max score of opt -1.0. 0.0: ' + ret4[0]);
+	ret4 = sw_affine_gap_tm_comp(search_profile, sequence_1, sequence_2);
+	console.log('max score of tm -1.0. 0.0: ' + ret4[0]);
 
 
 	//if (ret2[0] == ret[0])
