@@ -62,6 +62,45 @@ var is_match = function (x, y) {
 	}
 };
 
+var check_diff = function (m1, m2) { // compare score matrix
+	if (m2.length !== m1.length)
+		console.log("m2.length !== m1.length");
+
+	if (m2[0].length !== m1[0].length)
+		console.log("m2[0].length !== m1[0].length");
+
+	var lx = m1.length;
+	var ly = m1[0].length
+
+	for (var y = 0; y < ly; ++y) {
+		for (var x = 0; x < lx; ++x) {
+			if (m1[x][y] < 0.0)
+				m1[x][y] = 0.0;
+			else
+				m1[x][y] = m1[x][y].toFixed(5)
+
+			if (m2[x][y] < 0.0)
+				m2[x][y] = 0.0;
+			else
+				m2[x][y] = m2[x][y].toFixed(5)
+		}
+	}
+
+	var max_score_check = 0.0;
+	for (y = 0; y < ly; ++y) {
+		for (x = 0; x < lx; ++x) {
+			m1[x][y] = m1[x][y] - m2[x][y];
+			if (Math.abs(m1[x][y]) < 0.00000001)
+				m1[x][y] = 0.0;
+			if (max_score_check < Math.abs(m1[x][y]))
+				max_score_check = Math.abs(m1[x][y]);
+		}
+	}
+	console.log("check_diff : " + max_score_check);
+
+	if (max_score_check <= 0)
+		return;
+}
 
 var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
 	var gapOpen = search_profile.gapOpen || -1;
@@ -213,13 +252,13 @@ var sw_affine_gap_genc_comp = function (search_profile /* {match/mismatch or sub
 	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
 	var lx = dseq.length;
 	var ly = qseq.length;
-	var score_mat = Matrix(ly, lx);
-	var trace_mat = Matrix(ly, lx);
+	var hm = Matrix(lx, ly);
+	var tm = Matrix(lx, ly);
+	var ee = Matrix(lx, ly);
+	var ff = Matrix(lx, ly);
+
 	var h = Matrix(lx, ly);
-	var score_mat3 = Matrix(lx, ly);
-	var trace_mat2 = Matrix(lx, ly);
-	var yy = Matrix(ly, lx);
-	var xx = Matrix(ly, lx);
+	var tr = Matrix(lx, ly);
 
 	var prev_score = [];
 	var prev_yskip = [];
@@ -228,33 +267,31 @@ var sw_affine_gap_genc_comp = function (search_profile /* {match/mismatch or sub
 	var d_xskipmatch = -100.0;
 	var d_yskipmatch = -100.0;
 
-	for (x = 0; x < lx; ++x) {
+	for (var x = 0; x < lx; ++x) {
 		prev_score[x] = 0;
 		prev_yskip[x] = -100.0;
 	}
 	var d_quality;
 
-	for (y = 0; y < ly; ++y) {
-		for (x = 0; x < lx; ++x) {
+	for (var y = 0; y < ly; ++y) {
+		for (var x = 0; x < lx; ++x) {
 			if (x == 0 || y == 0) { /**/
-				if (x == 0) {
-					xx[y][x] = -100.0;  /*xskipmatch = MS_SCORE_MININF;*/
-				}
+				if (x == 0)
+					ee[x][y] = 0;
 				if (y == 0)
-					yy[y][x] = -100.0; // prev_yskip = [];
-				score_mat[y][x] = 0; // prev_score[x];
-				trace_mat[y][x] = 0;
-				trace_mat2[y][x] = 0;
+					ff[x][y] = 0;
+				hm[x][y] = 0;
+				tm[x][y] = 0;
+				tr[x][y] = 0;
 				continue;
-
-			} else {
-				var m_last = score_mat[y - 1][x - 1]; // prev_score[x];???
-
-				var ex_last = xx[y][x - 1];
-				var fy_last = yy[y - 1][x];
-				var my_last = score_mat[y - 1][x];
-				var mx_last = score_mat[y][x - 1];
 			}
+
+			var ey_last = ee[x][y - 1];
+			var fx_last = ff[x - 1][y];
+			var m_last = hm[x - 1][y - 1];
+			var mx_last = hm[x - 1][y];
+			var my_last = hm[x][y - 1];
+
 			var s = substitution.method(substitution, dseq[x], qseq[y]);  /* Substitutional Matrix */
 
 			if (x == 1) {
@@ -366,46 +403,53 @@ var sw_affine_gap_genc_comp = function (search_profile /* {match/mismatch or sub
 				prev_score[x] = d_lastquality;
 				d_lastquality = d_quality;
 			}
+
 			var m_new = m_last + s;
-			var mx_new = mx_last + gapOpen; /* */
+			var mx_new = mx_last + gapOpen;
 			var my_new = my_last + gapOpen;
-			xx[y][x] = Math.max(ex_last + gapExt, mx_new, 0);
-			yy[y][x] = Math.max(fy_last + gapExt, my_new, 0);
-			//		ee[i][j] = Math.max(e_new, l_new);
-			//		ff[j][i] = Math.max(f_new, u_new);
+			ee[x][y] = Math.max(ey_last + gapExt, my_new);
+			ff[x][y] = Math.max(fx_last + gapExt, mx_new);
 
-			score_mat[y][x] = Math.max(m_new, xx[y][x], yy[y][x], 0);
-			if (score_mat[y][x] == m_new && !is_match(dseq[x], qseq[y])) {
-				trace_mat[y][x] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
-			}
-			if (score_mat[y][x] == xx[y][x])
-				trace_mat[y][x] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
-			if (score_mat[y][x] == yy[y][x])
-				trace_mat[y][x] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
-			if (score_mat[y][x] == m_new && is_match(dseq[x], qseq[y]))
-				trace_mat[y][x] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
-			if (score_mat[y][x] == 0)
-				trace_mat[y][x] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			var d_xs = ff[x - 1][y - 1] + s;
+			var d_ys = ee[x - 1][y - 1] + s;
+			testm = hm[x][y] = Math.max(m_new, d_ys, d_xs, 0);
+
+
+			if (testm == m_new && is_match(dseq[x], qseq[y]))
+				tm[x][y] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (testm == m_new && !is_match(dseq[x], qseq[y]))
+				tm[x][y] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (testm == d_xs)
+				tm[x][y] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (testm == d_ys)
+				tm[x][y] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (testm == 0)
+				tm[x][y] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 			/*
-			var arr = [d_new, ff[i][j], ee[i][j], 0];
-			var trace = arr.indexOf(Math.max.apply(Math, arr));
-			trace_mat[i][j] = trace;
+						var test = Math.max(d_quality, d_yskipmatch, d_xskipmatch, 0);
+			
+						if (testm !== test) {
+							console.log("score : " + testm + "gc: " + test);
+							if (d_xs !== d_xskipmatch)
+								if (d_xs != Math.max(d_xskipmatch, d_quality))
+									console.log("dxs: " + d_xs + "gc: " + d_xskipmatch);
+							if (d_ys !== d_yskipmatch)
+								if (d_xs != Math.max(d_yskipmatch, d_quality))
+									console.log("dys: " + d_ys + "gc: " + d_yskipmatch);
+						}
+			
+						if (test == d_quality && !is_match(dseq[x], qseq[y])) {
+							tr[x][y] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+						}
+						if (test == d_xskipmatch)
+							tr[x][y] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+						if (test == d_yskipmatch)
+							tr[x][y] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+						if (test == d_quality && is_match(dseq[x], qseq[y]))
+							tr[x][y] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+						if (test == 0)
+							tr[x][y] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 			*/
-
-			var test = Math.max(d_quality, d_yskipmatch, d_xskipmatch, 0);
-			score_mat3[x][y] = test;
-			if (test == d_quality && !is_match(dseq[x], qseq[y])) {
-				trace_mat2[x][y] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
-			}
-			if (test == d_xskipmatch)
-				trace_mat2[x][y] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
-			if (test == d_yskipmatch)
-				trace_mat2[x][y] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
-			if (test == d_quality && is_match(dseq[x], qseq[y]))
-				trace_mat2[x][y] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
-			if (test == 0)
-				trace_mat2[x][y] = (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
-
 		}
 		if (y) {
 			max_score_perv = (d_quality > max_score_perv) ? d_quality : max_score_perv; /* checkbest_m(quality, seqLen, y+1, max_v) */
@@ -416,27 +460,29 @@ var sw_affine_gap_genc_comp = function (search_profile /* {match/mismatch or sub
 		}
 	}
 
-	for (x = 0; x < lx; ++x) {
+	for (var x = 0; x < lx; ++x) {
 		max_score_perv = (prev_score[x] > max_score_perv) ? prev_score[x] : max_score_perv; /* checkbest_m(quality, x, yprofLen, max_v) */
 		if (x != (lx - 1))
-			h[x][y] = prev_score[x + 1];
-		else
-			h[lx - 1][y] = max_score_perv;
+			h[x][ly - 1] = prev_score[x + 1];
+//		else
+//			h[lx - 1][ly - 1] = max_score_perv;
 
 	}
 
 	/* console.log(score_mat); */
-	var mscore = score_mat[0][0];
+	var mscore = hm[0][0];
 	for (i = 0; i < ly; ++i) {
 		for (j = 0; j < lx; ++j) {
-			if (mscore < score_mat[i][j])
-				mscore = score_mat[i][j];
+			if (mscore < hm[i][j])
+				mscore = hm[i][j];
 		}
 	}
 	/* console.log(mscore); */
 
+	check_diff(h, hm);
+
 	//	return [mscore, score_mat, trace_mat];
-	return [max_score_perv, h, trace_mat2];
+	return [max_score_perv, h, tm];
 }
 
 /*
@@ -494,15 +540,15 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			er1[j - 1] = er;
 			er = ee[i][j] = Math.max(er + gapExt, my_new);
 
-			if (h == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
+			if (hr == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
-			if (h == (hr0[j - 1] + s) && !is_match(dseq[i], qseq[j]))
+			if (hr == (hr0[j - 1] + s) && !is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
-			if (h == fr0[j - 1] + s)
+			if (hr == fr0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
-			if (h == er0[j - 1] + s)
+			if (hr == er0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
-			if (h == 0)
+			if (hr == 0)
 				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 			/*
             var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
