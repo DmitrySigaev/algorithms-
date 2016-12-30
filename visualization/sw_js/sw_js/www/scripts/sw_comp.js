@@ -62,12 +62,17 @@ var is_match = function (x, y) {
 	}
 };
 
-var check_diff = function (m1, m2) { // compare score matrix
-	if (m2.length !== m1.length)
-		console.log("m2.length !== m1.length");
+var check_diff = function (m1, m2, message) { // compare score matrix
+	var message = message || "check_diff: "
+	if (m2.length !== m1.length) {
+		console.log(message + "m2.length !== m1.length");
+		return 1;
+	}
 
-	if (m2[0].length !== m1[0].length)
-		console.log("m2[0].length !== m1[0].length");
+	if (m2[0].length !== m1[0].length) {
+		return 1;
+		console.log(message + "m2[0].length !== m1[0].length");
+	}
 
 	var lx = m1.length;
 	var ly = m1[0].length
@@ -96,10 +101,9 @@ var check_diff = function (m1, m2) { // compare score matrix
 				max_score_check = Math.abs(m1[x][y]);
 		}
 	}
-	console.log("check_diff : " + max_score_check);
+	console.log(message + max_score_check);
 
-	if (max_score_check <= 0)
-		return;
+	return max_score_check;
 }
 
 var sw_affine_gap_v1_comp = function (search_profile, dseq, qseq) {
@@ -610,43 +614,9 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	console.log('max score of tm -1.0. 0.0: ' + ret4[0]);
 
 
-	//if (ret2[0] == ret[0])
-	//	return;
+	if (!check_diff(ret[1], ret2[1], "final difference: "))
 
-	if (1) { // compare score matrix
-		var lx = sequence_1.length;
-		var ly = sequence_2.length;
-
-		for (y = 0; y < ly; ++y) {
-			for (x = 0; x < lx; ++x) {
-				if (ret[1][x][y] < 0.0)
-					ret[1][x][y] = 0.0;
-				else
-					ret[1][x][y] = ret[1][x][y].toFixed(5)
-				if (ret2[1][x][y] < 0.0)
-					ret2[1][x][y] = 0.0;
-				else
-					ret2[1][x][y] = ret2[1][x][y].toFixed(5)
-			}
-		}
-
-		var max_score_check = 0.0;
-		for (y = 0; y < ly; ++y) {
-			for (x = 0; x < lx; ++x) {
-				ret[1][x][y] = ret[1][x][y] - ret2[1][x][y];
-				if (Math.abs(ret[1][x][y]) < 0.00000001)
-					ret[1][x][y] = 0.0;
-				if (max_score_check < Math.abs(ret[1][x][y]))
-					max_score_check = Math.abs(ret[1][x][y]);
-			}
-		}
-		console.log("check: " + max_score_check);
-
-		if (max_score_check <= 0)
-			return;
-	}
-
-
+		return;
 	return;
 
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
