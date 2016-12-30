@@ -580,7 +580,7 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 	}
 	/* console.log(mscore); */
 
-	return [mscore, h, trace_mat];
+	return [mscore, h, trace_mat, ee, ff];
 }
 
 
@@ -605,18 +605,24 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	ret = ret2;
 
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	ret3 = sw_affine_gap_tm_comp(search_profile, sequence_1, sequence_2);
-	console.log('max score of tm: ' + ret3[0]);
+	ret3 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
+	console.log('max score of opt: ' + ret3[0]);
 	ret2 = ret3;
 
 	var search_profile = { S: subtitution, gapOpen: -1.0, gapExt: 0.0 };  /*define search profile*/
-	ret4 = sw_affine_gap_tm_comp(search_profile, sequence_1, sequence_2);
-	console.log('max score of tm -1.0. 0.0: ' + ret4[0]);
+	ret4 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
+	console.log('max score of opt -1.0. 0.0: ' + ret4[0]);
 
 
-	if (!check_diff(ret[1], ret2[1], "final difference: "))
-
+	if (check_diff(ret[1], ret2[1], "final difference: "))
 		return;
+
+	if (check_diff(ret[3], ret2[3], "fd ee: "))
+		return;
+
+	if (check_diff(ret[4], ret2[4], "fd ff: "))
+		return;
+
 	return;
 
 	//    var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
