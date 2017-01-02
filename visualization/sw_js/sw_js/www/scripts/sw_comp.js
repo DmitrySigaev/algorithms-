@@ -524,11 +524,11 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
                but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
 			if (i == 0 || j == 0) { /**/
-				if (i == 0) {
-					ee[i][j] = 0;//-1000;
-				}
-				if (j == 0)
-					ff[i][j] = 0;//-1000;
+//				if (i == 0) {
+//					ee[i][j] = 0;//-1000;
+	//			}
+//				if (j == 0)
+//					ff[i][j] = 0;//-1000;
 				h[i][j] = 0;
 				trace_mat[i][j] = 0;
 				hr = 0;
@@ -536,13 +536,18 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			}
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
 			var mx_new = hr0[j] + gapOpen;
-			var my_new = hr + gapOpen;
 
-			hr1[j] = hr = h[i][j] = Math.max(hr0[j - 1] + s, er0[j - 1] + s, fr0[j - 1] + s, 0);
+			ern = ee[i][j] = Math.max(er + gapExt, hr + gapOpen);
+			
+			hr = Math.max(hr0[j - 1], er0[j - 1], fr0[j - 1]);
+			hr += s;
+			hr = Math.max(hr, 0);
 
-			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
+			hr1[j] = h[i][j] = hr;
+
 			er1[j - 1] = er;
-			er = ee[i][j] = Math.max(er + gapExt, my_new);
+			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
+			er = ern;
 
 			if (hr == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
