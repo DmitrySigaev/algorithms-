@@ -514,7 +514,7 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 	var hr0 = [];
 	var hr1 = [];
 
-	for (var j = 0; j < l2; ++j) {
+	for (var j = 0; j < l2 + 2; ++j) {
 		er1[j] = 0;
 		fr1[j] = 0;
 		hr1[j] = 0;
@@ -524,8 +524,6 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 		fr1[0] = 0;
 		er = 0;
 		for (var j = 0; j < l2; ++j) {
-			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
-               but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
 			if (i == 0 || j == 0) { /**/
 				//				if (i == 0) {
 				//					ee[i][j] = 0;//-1000;
@@ -538,13 +536,13 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 				continue;
 			}
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
-			var mx_new = hr0[j] + gapOpen;
+			var mx_new = hr0[j + 2] + gapOpen;
 
 			if (i == 1 || j == 1)
 				var ern0 = 0;
 			else {
 				enn0[0][j] = ern0
-				var ern0 = Math.max(ern0 + gapExt, hr0[j-2] + gapOpen);
+				var ern0 = Math.max(ern0 + gapExt, hr0[j - 2 + 2] + gapOpen);
 				enn0[1][j] = ern0;
 				enn0[2][j] = er0[j - 1];
 				enn0[3][j] = er;
@@ -554,19 +552,19 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			}
 			var ern = ee[i][j] = Math.max(er + gapExt, hr + gapOpen);
 
-			hr = Math.max(hr0[j - 1], er0[j - 1], fr0[j - 1]);
+			hr = Math.max(hr0[j - 1 + 2], er0[j - 1], fr0[j - 1]);
 			hr += s;
 			hr = Math.max(hr, 0);
 
-			hr1[j] = h[i][j] = hr;
+			hr1[j + 2] = h[i][j] = hr;
 
 			er1[j - 1] = er;
 			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
 			er = ern;
 
-			if (hr == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
+			if (hr == (hr0[j - 1 + 2] + s) && is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
-			if (hr == (hr0[j - 1] + s) && !is_match(dseq[i], qseq[j]))
+			if (hr == (hr0[j - 1 + 2] + s) && !is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
 			if (hr == fr0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
@@ -585,7 +583,7 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 		for (var j = 0; j < l2; ++j) {
 			fr0[j] = fr1[j];
 		}
-		for (var j = 0; j < l2; ++j) {
+		for (var j = 0; j < l2 + 2; ++j) {
 			hr0[j] = hr1[j];
 		}
 		//		fr0 = fr1;
