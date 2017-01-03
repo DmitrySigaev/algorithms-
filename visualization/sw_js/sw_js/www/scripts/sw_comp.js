@@ -468,8 +468,8 @@ var sw_affine_gap_genc_comp = function (search_profile /* {match/mismatch or sub
 		max_score_perv = (prev_score[x] > max_score_perv) ? prev_score[x] : max_score_perv; /* checkbest_m(quality, x, yprofLen, max_v) */
 		if (x != (lx - 1))
 			h[x][ly - 1] = prev_score[x + 1];
-//		else
-//			h[lx - 1][ly - 1] = max_score_perv;
+		//		else
+		//			h[lx - 1][ly - 1] = max_score_perv;
 
 	}
 
@@ -504,6 +504,9 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 	var ee = Matrix(l1, l2);
 	var ff = Matrix(l1, l2);
 	var er;
+	var enn0 = [[], [], [], []];
+
+
 	var er0 = [];
 	var er1 = [];
 	var fr0 = [];
@@ -524,11 +527,11 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
                but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
 			if (i == 0 || j == 0) { /**/
-//				if (i == 0) {
-//					ee[i][j] = 0;//-1000;
-	//			}
-//				if (j == 0)
-//					ff[i][j] = 0;//-1000;
+				//				if (i == 0) {
+				//					ee[i][j] = 0;//-1000;
+				//			}
+				//				if (j == 0)
+				//					ff[i][j] = 0;//-1000;
 				h[i][j] = 0;
 				trace_mat[i][j] = 0;
 				hr = 0;
@@ -537,8 +540,20 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
 			var mx_new = hr0[j] + gapOpen;
 
-			ern = ee[i][j] = Math.max(er + gapExt, hr + gapOpen);
-			
+			if (i == 1 || j == 1)
+				var ern0 = 0;
+			else {
+				enn0[0][j] = ern0
+				var ern0 = Math.max(ern0 + gapExt, hr0[j-2] + gapOpen);
+				enn0[1][j] = ern0;
+				enn0[2][j] = er0[j - 1];
+				enn0[3][j] = er;
+				if (ern0 !== er0[j - 1])
+					console.log("!!!!");
+
+			}
+			var ern = ee[i][j] = Math.max(er + gapExt, hr + gapOpen);
+
 			hr = Math.max(hr0[j - 1], er0[j - 1], fr0[j - 1]);
 			hr += s;
 			hr = Math.max(hr, 0);
