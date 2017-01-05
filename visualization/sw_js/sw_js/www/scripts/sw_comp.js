@@ -515,29 +515,21 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 	var hr1 = [];
 
 	for (var j = 0; j < l2 + 1; ++j) {
+		er0[j] = 0;
+		fr0[j] = 0;
+		hr0[j] = 0;
 		er1[j] = 0;
 		fr1[j] = 0;
 		hr1[j] = 0;
 	}
 
-	for (var i = 0; i < l1; ++i) {
+	for (var i = 1; i < l1; ++i) {
 		fr1[0] = 0;
 		er = 0;
 		ern0 = -gapExt;
 		hr = 0;
 
 		for (var j = 1; j < l2; ++j) {
-			if (i == 0) { /**/
-				//				if (i == 0) {
-				//					ee[i][j] = 0;//-1000;
-				//			}
-				//				if (j == 0)
-				//					ff[i][j] = 0;//-1000;
-				h[i][j] = 0;
-				trace_mat[i][j] = 0;
-				hr = 0;
-				continue;
-			}
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
 			var mx_new = hr0[j + 1] + gapOpen;
 
