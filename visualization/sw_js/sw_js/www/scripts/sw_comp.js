@@ -528,9 +528,9 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 
 			var s = substitution.method(substitution, dseq[i], qseq[j]);
 			var mx_new = hr0[j + 1] + gapOpen;
-			ern0 = Math.max(ern0 + gapExt, hr0[j - 2 + 1] + gapOpen);
+			ern0 = Math.max(ern0 + gapExt, hr0[j - 1] + gapOpen);
 			var ern = ee[i][j] = Math.max(er + gapExt, hr + gapOpen);
-			hr = Math.max(hr0[j - 1 + 1], ern0, fr0[j - 1]);
+			hr = Math.max(hr0[j], ern0, fr0[j - 1]);
 			hr += s;
 			hr = Math.max(hr, 0);
 			hr1[j + 1] = h[i][j] = hr;
@@ -555,9 +555,8 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 		for (var j = 0; j < l2 + 1; ++j) {
 			hr0[j] = hr1[j];
 		}
-		//		fr0 = fr1;
 	}
-	/* console.log(score_mat); */
+	/* console.log(h); */
 	var mscore = h[0][0];
 	for (i = 0; i < l1; ++i) {
 		for (j = 0; j < l2; ++j) {
