@@ -504,21 +504,16 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 	var ee = Matrix(l1, l2);
 	var ff = Matrix(l1, l2);
 	var er;
-	var enn0 = [[], [], [], []];
 	var ern0;
 
-	var er0 = [];
-	var er1 = [];
 	var fr0 = [];
 	var fr1 = [];
 	var hr0 = [];
 	var hr1 = [];
 
 	for (var j = 0; j < l2 + 1; ++j) {
-		er0[j] = 0;
 		fr0[j] = 0;
 		hr0[j] = 0;
-		er1[j] = 0;
 		fr1[j] = 0;
 		hr1[j] = 0;
 	}
@@ -535,14 +530,12 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			var mx_new = hr0[j + 1] + gapOpen;
 			ern0 = Math.max(ern0 + gapExt, hr0[j - 2 + 1] + gapOpen);
 			var ern = ee[i][j] = Math.max(er + gapExt, hr + gapOpen);
-			hr = Math.max(hr0[j - 1 + 1], ern0 /*er0[j - 1]*/, fr0[j - 1]);
+			hr = Math.max(hr0[j - 1 + 1], ern0, fr0[j - 1]);
 			hr += s;
 			hr = Math.max(hr, 0);
 			hr1[j + 1] = h[i][j] = hr;
-			er1[j - 1] = er;
 			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
 			er = ern;
-
 
 			if (hr == (hr0[j - 1 + 1] + s) && is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
@@ -550,12 +543,12 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
 			if (hr == fr0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
-			if (hr == er0[j - 1] + s)
+			if (hr == ern0 + s)
 				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
 			if (hr == 0)
 				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 		}
-		er0 = er1;
+
 		for (var j = 0; j < l2; ++j) {
 			fr0[j] = fr1[j];
 		}
