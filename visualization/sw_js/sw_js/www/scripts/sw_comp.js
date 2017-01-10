@@ -537,9 +537,9 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
 			er = ern;
 
-			if (hr == (hr0[j - 1 + 1] + s) && is_match(dseq[i], qseq[j]))
+			if (hr == (hr0[j] + s) && is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
-			if (hr == (hr0[j - 1 + 1] + s) && !is_match(dseq[i], qseq[j]))
+			if (hr == (hr0[j] + s) && !is_match(dseq[i], qseq[j]))
 				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
 			if (hr == fr0[j - 1] + s)
 				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
