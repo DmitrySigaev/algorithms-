@@ -726,6 +726,99 @@ var sw_affine_gap_sg_v1_comp_new = function (search_profile, dseq, qseq) {
 	return [mscore, h, trace_mat, ee, ff];
 }
 
+/*
+   Other the Smith-Waterman algorithm implementation, which is described in:
+   http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf
+*/
+var sw_affine_gap_sg = function (search_profile, dseq, qseq) {
+	var gapOpen = search_profile.gapOpen || -1;
+	var gapExt = search_profile.gapExt || 0;
+	var substitution = search_profile.S || { method: score, match: 1.0, mismatch: -1.0 };
+	var l1 = dseq.length;
+	var l2 = qseq.length;
+	var h = Matrix(l1, l2);
+	var trace_mat = Matrix(l1, l2);
+	var ee = Matrix(l1, l2);
+	var ff = Matrix(l1, l2);
+	var er;
+	var er0 = [];
+	var er1 = [];
+	var fr0 = [];
+	var fr1 = [];
+	var hr0 = [];
+	var hr1 = [];
+
+	for (var j = 0; j < l2; ++j) {
+		er1[j] = 0;
+		fr1[j] = 0;
+		hr1[j] = 0;
+	}
+
+	for (var i = 0; i < l1; ++i) {
+		fr1[0] = 0;
+		er = 0;
+		for (var j = 0; j < l2; ++j) {
+			/* initialization: http://pages.cs.wisc.edu/~bsettles/ibs08/lectures/02-alignment.pdf  ee(Iy) and ff(Ix) = -infinity 
+               but in accordance with http://iwbbio.ugr.es/2014/papers/IWBBIO_2014_paper_143.pdf */
+			if (i == 0 || j == 0) { /**/
+				if (i == 0) {
+					ee[i][j] = 0;//-1000;
+				}
+				if (j == 0)
+					ff[i][j] = 0;//-1000;
+				h[i][j] = 0;
+				trace_mat[i][j] = 0;
+				hr = 0;
+				continue;
+			}
+			var s = substitution.method(substitution, dseq[i], qseq[j]);
+			var mx_new = hr0[j] + gapOpen;
+			var my_new = hr + gapOpen;
+
+			hr1[j] = hr = h[i][j] = Math.max(hr0[j - 1] + s, er0[j - 1] + s, fr0[j - 1] + s, 0);
+
+			fr1[j] = ff[i][j] = Math.max(fr0[j] + gapExt, mx_new);
+			er1[j - 1] = er;
+			er = ee[i][j] = Math.max(er + gapExt, my_new);
+
+			if (h == (hr0[j - 1] + s) && is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+			if (h == (hr0[j - 1] + s) && !is_match(dseq[i], qseq[j]))
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+			if (h == fr0[j - 1] + s)
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+			if (h == er0[j - 1] + s)
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+			if (h == 0)
+				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+			/*
+            var arr = [m_new, ff[i - 1][j - 1] + s, ee[i - 1][j - 1] + s, 0];
+
+            var trace = arr.indexOf(Math.max.apply(Math, arr));
+            trace_mat[i][j] = trace;
+            */
+		}
+		er0 = er1;
+		for (var j = 0; j < l2; ++j) {
+			fr0[j] = fr1[j];
+		}
+		for (var j = 0; j < l2; ++j) {
+			hr0[j] = hr1[j];
+		}
+		//		fr0 = fr1;
+	}
+	/* console.log(score_mat); */
+	var mscore = h[0][0];
+	for (i = 0; i < l1; ++i) {
+		for (j = 0; j < l2; ++j) {
+			if (mscore < h[i][j])
+				mscore = h[i][j];
+		}
+	}
+	/* console.log(mscore); */
+
+	return [mscore, h, trace_mat, ee, ff];
+}
 
 function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	var sequence_1 = seq_1.split(" ");
@@ -759,12 +852,12 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 	ret = ret2;
 
 	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
-	ret3 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
+	var ret3 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
 	console.log('max score of opt: ' + ret3[0]);
 	ret2 = ret3;
 
 	var search_profile = { S: subtitution, gapOpen: -1.0, gapExt: 0.0 };  /*define search profile*/
-	ret4 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
+	var ret4 = sw_affine_gap_sg_v1_comp(search_profile, sequence_1, sequence_2);
 	console.log('max score of opt -1.0. 0.0: ' + ret4[0]);
 
 
@@ -776,6 +869,20 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 
 	if (check_diff(ret[4], ret2[4], "fd ff: "))
 		return;
+
+	var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+	var ret5 = sw_affine_gap_sg(search_profile, sequence_1, sequence_2);
+	console.log('max score of sw_affine_gap_sg: ' + ret5[0]);
+
+	if (check_diff(ret[1], ret5[1], "final difference: "))
+		return;
+
+	if (check_diff(ret[3], ret5[3], "fd ee: "))
+		return;
+
+	if (check_diff(ret[4], ret5[4], "fd ff: "))
+		return;
+
 
 	if (1)
 	{
@@ -818,6 +925,18 @@ function CalculateSWandDrawComp(seq_1, seq_2, matrix, gapOpen, gapExt) {
 		if (check_diff(ret[4], ret2[4], "tr: fd ff: "))
 			return;
 
+		var search_profile = { S: subtitution, gapOpen: gapOpen, gapExt: gapExt };  /*define search profile*/
+		var ret5 = sw_affine_gap_sg(search_profile, sequence_2, sequence_1);
+		console.log('tr: max score of sw_affine_gap_sg: ' + ret5[0]);
+
+		if (check_diff(ret[1], ret5[1], "tr: final difference: "))
+			return;
+
+		if (check_diff(ret[3], ret5[3], "tr: fd ee: "))
+			return;
+
+		if (check_diff(ret[4], ret5[4], "tr: fd ff: "))
+			return;
 	}
 
 	return;
