@@ -50,6 +50,8 @@ var ScoreT = {
 };
 
 var S = function (substitution, x, y) {
+	if (!x || !y)
+		return 0;
 	var substitutional_matrix = substitution.submatrix || ScoreT.identityNuc;
 	return substitutional_matrix[x.toUpperCase()][y.toUpperCase()];
 };
@@ -574,8 +576,73 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 	var trace_mat = Matrix(l2, l1);
 	var ee = Matrix(l2, l1);
 	var ff = Matrix(l2, l1);
-	var F, global_max = 0, h11, h01, hr;
 
+
+	var E = [];
+	var H = [];
+	var global_max = 0;
+
+	for (var i = 0; i < l2 + 1; ++i) {
+		E[i] = 0;
+		H[i] = 0;
+	}
+
+	for (var j = 0; j < (l1 - 1 + 3) / 4; ++j) {
+		var F0 = 0
+		var F1 = 0
+		var F2 = 0
+		var F3 = 0
+		var h0 = 0
+		var h1 = 0
+		var h2 = 0
+		var h3 = 0
+
+		for (var i = 1; i < l2; ++i) {
+			e = E[i];
+			h4 = H[i];
+			var s1 = substitution.method(substitution, dseq[j * 4 + 1], qseq[i]);
+			var s2 = substitution.method(substitution, dseq[j * 4 + 2], qseq[i]);
+			var s3 = substitution.method(substitution, dseq[j * 4 + 3], qseq[i]);
+			var s4 = substitution.method(substitution, dseq[j * 4 + 4], qseq[i]);
+
+			console.log("h:" + (i - 1).toString() + ":" + h0.toString() + "," + h1.toString() + "," + h2.toString() + "," + h3.toString() + ":");
+			hr = h5 = Math.max(h0 + s1, e + s1, F0 + s1, 0);
+			global_max = Math.max(global_max, hr);
+			h[i][j * 4 + 1] = hr;
+			e = Math.max(h0 + gapOpen, e + gapExt);
+			F0 = Math.max(h0 + gapOpen, F0 + gapExt);
+
+
+			hr = h6 = Math.max(h1 + s2, e + s2, F1 + s2, 0);
+			global_max = Math.max(global_max, hr);
+			h[i][j * 4 + 2] = hr;
+			e = Math.max(h1 + gapOpen, e + gapExt);
+			F1 = Math.max(h1 + gapOpen, F1 + gapExt);
+
+			hr = h7 = Math.max(h2 + s3, e + s3, F2 + s3, 0);
+			global_max = Math.max(global_max, hr);
+			h[i][j * 4 + 3] = hr;
+			e = Math.max(h2 + gapOpen, e + gapExt);
+			F2 = Math.max(h2 + gapOpen, F2 + gapExt);
+
+			hr = h8 = Math.max(h3 + s4, e + s4, F3 + s4, 0);
+			global_max = Math.max(global_max, hr);
+			h[i][j * 4 + 4] = hr;
+			E[i]= e = Math.max(h3 + gapOpen, e + gapExt);
+			F3 = Math.max(h3 + gapOpen, F3 + gapExt);
+
+			H[i] = h8; 
+			console.log("e:" + (i - 1).toString() + ":" + e.toString() + "," + global_max.toString() + ":");
+			console.log("o:" + (i - 1).toString() + ":" + h5.toString() + "," + h6.toString() + "," + h7.toString() + "," + h8.toString() + ":");
+			h0 = h4; h1 = h5; h2 = h6; h3 = h7;
+			console.log("f:" + (i - 1).toString() + ":" + F0.toString() + "," + F1.toString() + "," + F2.toString() + "," + F3.toString() + ":");
+			console.log("v:" + (i - 1).toString() + ":" + s1.toString() + "," + s2.toString() + "," + s3.toString() + "," + s4.toString() + ":");
+		}
+	}
+
+	console.log(global_max);
+
+	var F, global_max = 0, h11, h01, hr;
 	var e = [];
 	var h0 = [];
 
@@ -583,7 +650,6 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 		e[j] = 0;
 		h0[j] = 0;
 	}
-
 
 
 	for (var i = 1; i < l2; ++i) {
@@ -595,30 +661,31 @@ var sw_affine_gap_sg_v1_comp = function (search_profile, dseq, qseq) {
 			h01 = h0[j];
 			hr = h0[j] = Math.max(h11 + s, e[j] + s, F + s, 0);
 			global_max = Math.max(global_max, hr);
-			h[j][i] = hr;
+			h[i][j] = hr;
 
 			if (hr == (h11 + s) && is_match(dseq[j], qseq[i]))
-				trace_mat[j][i] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
+				trace_mat[i][j] |= (1 << 1);// #define LAL_MASK_MATCH         (1<<1)
 			if (hr == (h11 + s) && !is_match(dseq[j], qseq[i]))
-				trace_mat[j][i] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
+				trace_mat[i][j] |= (1 << 0);// #define LAL_MASK_MISMATCH      (1<<0)
 			if (hr == e[j] + s)
-				trace_mat[j][i] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
+				trace_mat[i][j] |= (1 << 2); // #define LAL_MASK_GAP_OPEN_LEFT (1<<3)
 			if (hr == F + s)
-				trace_mat[j][i] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
+				trace_mat[i][j] |= (1 << 3);// #define LAL_MASK_GAP_OPEN_UP   (1<<2)
 			if (hr == 0)
-				trace_mat[j][i] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
+				trace_mat[i][j] |= (1 << 6); // #define LAL_MASK_ZERO          (1<<6)
 
 			e[j] = Math.max(h11 + gapOpen, e[j] + gapExt);
 			F = Math.max(h11 + gapOpen, F + gapExt);
 			h11 = h01;
+			console.log()
 		}
 	}
 	/* console.log(h); */
 	var mscore = h[0][0];
 	for (i = 0; i < l1; ++i) {
 		for (j = 0; j < l2; ++j) {
-			if (mscore < h[i][j])
-				mscore = h[i][j];
+			if (mscore < h[j][i])
+				mscore = h[j][i];
 		}
 	}
 	/* console.log(mscore); */
