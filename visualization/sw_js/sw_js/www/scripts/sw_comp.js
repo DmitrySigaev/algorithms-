@@ -19,6 +19,8 @@ var Matrix = function (rows, cols) {
   whereas a value equal to -d in case of gaps (insertions or deletions).
 */
 var score = function (substitution, x, y) {
+	if (!x || !y)
+		return 0;
 	if (x.toUpperCase() == y.toUpperCase()) {
 		return substitution.match || 1;
 	} else {

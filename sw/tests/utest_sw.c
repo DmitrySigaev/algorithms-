@@ -517,6 +517,40 @@ START_TEST(test_sw_gaptest1_290_76_194constant)
 	ck_assert_int_eq((int)score, 194); /* Max score */
 }END_TEST
 
+START_TEST(test_sw_gaptest1_290_89_193swdirection)
+{
+	scoring_matrix_t mtx;
+	int status = read_scoring_matrix(&mtx, gaptest1, strlen(gaptest1));
+	char seq1[] = { "CTTCCTACGTTGGGTCATAGTAGTGCGGCGTGGGCAATGCCTACGGAGGGGTGGAGCAACTGGCGCTATCACTTCTACCATCGTCTGCAGCGTACGA" };
+	size_t len1 = strlen(seq1);
+	char seq2[] = { "tcgtacgctgcagacgatggtagaagtgatagcgccagttgctccacccctccgtaggcattgcccacgccgcactactatgacccaacgtaggaagttg" };
+	//char seq2[]={ "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
+	size_t len2 = strlen(seq2);
+	sequence_t inseq1 = { 1, (char *)seq1, len1 };
+	sequence_t inseq2 = { 2, (char *)seq2, len2 };
+	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
+	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
+	seq2encodedseq(inseq1, enseq1, lal_encode31);
+	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
+	score_matrix_t sd = sw_directions(&sp, &enseq1, &enseq2);
+	element_t score = find_max(&sd.score);
+	ck_assert_int_eq((int)score.d, 89); /* Max score */ // ok
+	free_matrix(&sd.score);
+	free_matrix(&sd.directions);
+	sequence_t reverse1 = { 3, malloc(len1 + 1), len1 };
+	for (size_t i = 0; i < enseq1.len; i++) {
+		// computes the reverse complement of the input sequence.
+		reverse1.seq[i] = cns[(int)(enseq1.seq[enseq1.len - 1 - i])];
+	}
+	sd = sw_directions(&sp, &reverse1, &enseq2);
+	score = find_max(&sd.score);
+	ck_assert_int_eq((int)score.d, 193); /* Max  score */
+	free_matrix(&sd.score);
+	free_matrix(&sd.directions);
+}END_TEST
+
+
 void addSWTC(Suite *s) {
 	TCase *tc_core = tcase_create("SW");
 	
