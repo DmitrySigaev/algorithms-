@@ -517,7 +517,7 @@ START_TEST(test_sw_gaptest1_290_76_194constant)
 	ck_assert_int_eq((int)score, 194); /* Max score */
 }END_TEST
 
-START_TEST(test_sw_gaptest1_290_89_193swdirection)
+START_TEST(test_sw_gaptest1_290_89_193swdirection2)
 {
 	scoring_matrix_t mtx;
 	int status = read_scoring_matrix(&mtx, gaptest1, strlen(gaptest1));
@@ -554,6 +554,7 @@ START_TEST(test_sw_gaptest1_290_89_193swdirection)
 void addSWTC(Suite *s) {
 	TCase *tc_core = tcase_create("SW");
 	
+	tcase_add_test(tc_core, test_sw_gaptest1_290_89_193swdirection2);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_89_193swdirection);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_76_194constant);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_91_194swipe); // 90 check

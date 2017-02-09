@@ -59,6 +59,28 @@ typedef struct tag_search_swag_profile
 	scoring_matrix_t *mtx;
 } search_swag_profile_t;
 
+
+/**
+*  Structure of a search profile for frame plus algorithm 
+*  @typedef {struct} search_profile_t
+*  @field gap   gap opening cost and gap extension cost
+*  @field score_matrix   score matrix
+*/
+typedef struct tag_search_fp_profile
+{
+	double gapOpen;
+	double gapExt;
+	double gapFrame;
+	double matchMax5;
+	double matchMax6;
+	double gapOpen2;
+	double gapOpen3;
+	double gapFrameOpen;
+	double gapFrameExt;
+
+	scoring_matrix_t *mtx;
+} search_fp_profile_t;
+
 typedef struct {
 	size_t x_s; /* x - left position or start   */
 	size_t x_f; /* x - right position or finish */
