@@ -19,7 +19,7 @@ Suite* algorithms_suite(void)
 	addGSSTC(s);
 	addSWTC(s);
 	addScoringMatrixTC(s);
-
+	addFPTC(s);
 	return s;
 }
 
