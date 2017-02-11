@@ -550,7 +550,11 @@ double sw_gencore(const search_swag_profile_t * sp, const sequence_t * dseq, con
 	free(prof_data);
 
 	int *ms_sequence = (int *)malloc(sizeof(int) * dseq->len+5);
-	ms_sequence[0] = 13;
+	if(!sp->any_symbol)
+		ms_sequence[0] = 13; // default value
+	else 
+		ms_sequence[0] = sp->any_symbol;
+
 	for (size_t r = 0; r < dseq->len; r++) {
 		ms_sequence[r+1] = dseq->seq[r];
 	}

@@ -57,6 +57,7 @@ typedef struct tag_search_swag_profile
 	double gapOpen;
 	double gapExt;
 	scoring_matrix_t *mtx;
+	char any_symbol;
 } search_swag_profile_t;
 
 
