@@ -550,10 +550,36 @@ START_TEST(test_sw_gaptest1_290_89_193swdirection2)
 	free_matrix(&sd.directions);
 }END_TEST
 
+START_TEST(test_sw_ACHA_ELEEL_test)
+{
+	scoring_matrix_t mtx;
+	int status = read_scoring_matrix(&mtx, blosum62, strlen(blosum62));
+
+	// >ACHA_ELEEL P09688 electrophorus electricus (electric eel). acetylcholine receptor protein, alpha chain (fragment). 2/94
+	char seq1[] = { "SEDETRLVKNLFSGYNKVVRPVNH" };
+	size_t len1 = strlen(seq1);
+	// >HSBGL2
+	char seq2[] = { "ATGTCATACCTCTTATCTCCTCCCACAGCTCCTGGGCAACGTGCTGGTCTGTGTGCTGGCCCATCACTTTGGCAAAGAATTC" };
+	char any_symbol = 'x';
+	size_t len2 = strlen(seq2);
+	sequence_t inseq1 = { 1, (char *)seq1, len1 };
+	sequence_t inseq2 = { 2, (char *)seq2, len2 };
+	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
+	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
+	sequence_t any = { 3, malloc(1 + 1), 1 };
+	seq2encodedseq(inseq1, enseq1, lal_encode31);
+	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
+	mtx.scale = 10.0;
+	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0] };
+	double score = sw_gencore(&sp, &enseq2, &enseq1);
+	ck_assert_int_eq((int)score, 7);
+}END_TEST
 
 void addSWTC(Suite *s) {
 	TCase *tc_core = tcase_create("SW");
-	
+
+	tcase_add_test(tc_core, test_sw_ACHA_ELEEL_test);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_89_193swdirection2);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_89_193swdirection);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_76_194constant);
