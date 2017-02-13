@@ -472,8 +472,10 @@ typedef struct inpf {
 
 double sw_gencore(const search_swag_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
 {
-	int read_base = 16;
-	int line_size = 36;
+	/* model->profile_line_size = 52; len of raw prof */
+	/*MS_gcprofile_parts_bounds(model, &read_base, &line_size); */
+	int read_base = 16; /*shift from raw profile*/
+	int line_size = 36; /*32(matrix)+4 (gOx, gEx, gOy, gEy)*/
 	float *data_from;
 	scoretype *data_to;
 	float scale = sp->mtx->scale;
