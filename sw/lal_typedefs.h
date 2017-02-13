@@ -80,6 +80,7 @@ typedef struct tag_search_fp_profile
 	double gapFrameExt;
 
 	scoring_matrix_t *mtx;
+	char any_symbol;
 } search_fp_profile_t;
 
 typedef struct {
