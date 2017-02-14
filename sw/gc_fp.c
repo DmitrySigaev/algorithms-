@@ -41,30 +41,36 @@ in a sequence */
 #define MS_PROFILE_MATCHTABLE_SIZE 32
 
 /* each profile line id 38 floats
-( 32 emission scores + 6 gap penalties : gapop / gapext / qgapop / qgapext / begin / end ) */
-#define PROFILE_LINE_SIZE 38
+( 32 emission scores + 14 gap penalties : matchmax5 , matchmax6 , xopen , xext , fx, fopen , fext , 
+	  yopen1 , yopen2 , yopen3 , yext, xopen1 , xext1 , fx1 ;
+  profile : PROF_SCORES , $matchmax5 , $matchmax6 , $xopen , $xext , $fx, $fopen , $fext ,
+	  $yopen1 , $yopen2 , $yopen3 , $yext, $xopen1 , $xext1 , $fx1 ;
+
+ */
+#define FP_PROFILE_LINE_SIZE 46
 
 /* accessor for element j in line i of profile pr */
-#define PROFILE_VAL(pr,i,j) pr[(i)*PROFILE_LINE_SIZE+(j)]
+#define PROFILE_VAL(pr,i,j) pr[(i)*FP_PROFILE_LINE_SIZE+(j)]
 
 #define PROFILE_EMISSIONS_NO 32
-#define PROFILE_GAPOP   32
-#define PROFILE_GAPEXT  33
-#define PROFILE_QGAPOP  34
-#define PROFILE_QGAPEXT 35
-#define PROFILE_BEGIN   36
-#define PROFILE_END     37
 
 
-enum MS_SW_OFFSETS {
-	MS_SW_PROF_SCORES = 0,
-	MS_SW_OFFSET_GAPOP = MS_SW_PROF_SCORES + MS_PROFILE_MATCHTABLE_SIZE,
-	MS_SW_OFFSET_GAPEX,
-	MS_SW_OFFSET_GAPOP1,
-	MS_SW_OFFSET_GAPEX1,
-	MS_SW_OFFSET_DEPTH /* indicates depth in the data4vec profile */
+enum MS_FRAMEPLUS_OFFSETS {
+	MS_FRAMEPLUS_PROF_SCORES = 0,
+	MS_FRAMEPLUS_OFFSET_matchmax5 = MS_FRAMEPLUS_PROF_SCORES + MS_PROFILE_MATCHTABLE_SIZE,
+	MS_FRAMEPLUS_OFFSET_matchmax6,
+
+	/* @@ next 3 fields are not used */
+	MS_FRAMEPLUS_OFFSET_xopen, MS_FRAMEPLUS_OFFSET_xext, MS_FRAMEPLUS_OFFSET_fx,
+
+	MS_FRAMEPLUS_OFFSET_fopen,
+	MS_FRAMEPLUS_OFFSET_fext, MS_FRAMEPLUS_OFFSET_yopen1,
+	MS_FRAMEPLUS_OFFSET_yopen2, MS_FRAMEPLUS_OFFSET_yopen3,
+	MS_FRAMEPLUS_OFFSET_yext, MS_FRAMEPLUS_OFFSET_xopen1,
+	MS_FRAMEPLUS_OFFSET_xext1, MS_FRAMEPLUS_OFFSET_fx1
 };
 
+enum { MS_FRAMEPLUS_OFFSET_DEPTH_P2N = MS_FRAMEPLUS_OFFSET_fx1 + 1 }; /* depth of frame+_p2n profile in data4vec */
 #define min_2(a, b)  (((a)<(b)) ? (a) : (b))/* b will be evaluated twice! */
 
 /* Used as minus infinity in creating profile when a score of below
@@ -82,15 +88,21 @@ Range: 0..31
 Used as offset in matchtable part of the profile line to get match score */
 typedef int seqtype;
 
-/* As test moved into the start of the code, it tests old quality,
-that comes from a diagonal cell (x-1, y-1). This adjustment will
-be done in the very end. */
+#define scoretype_max2(a, b) {register scoretype c=(b); if ((a)<c) (a)=c; }
+
+/* Will be inlined only with linux/gcc/-O3
+#define scoretype_max(a, b) {a = scoretype_max_(a, (b)); }
+*/
+
+#define scoretype_max(a, b) scoretype_max2(a, b)
+
 #define checkbest(quality, xx, yy, max_v) \
                            if ((quality)>max_v.score) {\
-	                       max_v.score=(quality);  \
-         	               max_v.x=(xx);            \
-	                       max_v.y=(yy);            \
+                             max_v.score=(quality);   \
+                             max_v.x=(xx);            \
+                             max_v.y=(yy);            \
                            }
+
 
 typedef struct prev_line_s {
 	scoretype yskipmatch; /* delete state */
@@ -98,278 +110,182 @@ typedef struct prev_line_s {
 	seqtype   nseq; /* letter of the sequence */
 } prev_line_t;
 
-static best_t MS_Score_SW(seqtype* nseq, ms_profile_t *prof, int profLen, int seqLen) {
-	register int x = 0, y = 0; /* x - coordinate in seq, y - coord in profile */
+/* this is the original MS mode */
+static  best_t MS_Score_FP(seqtype* nseq, ms_profile_t *prof, int profLen, int seqLen)
+{
+	int x = 0, y = 0; /* x - coordinate in seq, y - coord in profile */
 
-	register scoretype xskipmatch = 0; /* insert state */
-	register scoretype quality = 0; /* match state */
 
-	prev_line_t *prev_line; /* array that stores state scores for whole line of DP matrix */
-	register prev_line_t *pre; /* pointer in prev_line array */
-
-	register scoretype lastquality; /* tmp buffer to save previous quality score
-									until we can save it into prev_line */
-	register scoretype yskipmatch; /* delete state */
+	scoretype xskipmatch[4], quality[4], fskipmatch[4]; /* insert, match, frame-shift insert states */
+	scoretype ytest[4]; /* delete state */
+	scoretype  q_new; /* match state score to be computed */
+	scoretype  y_new; /* delete state to be computed */
 	scoretype score; /* match score from profile*/
 
-	scoretype penopen, penext, penopen1, penext1;/* gap penalties: for x and y */
+	prev_line_t *prev_line; /* array that stores state scores for whole line of DP matrix */
+	prev_line_t *pre; /* pointer in prev_line array */
+	scoretype *prof_line_p;
 
-	register scoretype(*prof_line_p); /* profile data pointer */
-									  /*register scoretype bestjump,bestjump1;*/
+	scoretype matchmax5, matchmax6, /*xopen , xext , fx, */ f_open, fext,
+		yopen1, yopen2, yopen3, yext, xopen1, xext1, fx1; /* gap scores from profile */
+	int k0, k1, k2, k3, k; /* indeces for previous positions in insert&Co state scores buffers */
 
-	register scoretype pentest;
 
 #define _COUNT 0
 #if _COUNT
 	static int count1 = 1, count2 = 1, count3 = 1, count12 = 1, count13 = 1, count123 = 1, count0 = 2;
 #endif
 
-	/*  FILE *fp; not used */
-	/*int dum1=0,dum2=0;*/
 	best_t max_v; /* best seen alignment score in a match state */
+
 
 	max_v.score = MS_SCORE_MININF;
 	max_v.x = -1;
 	max_v.y = -1;
 
-	/* db sequences come padded with a spare base at the beginning
-	(N for nucleic, X for protein sequences). We skip it here. */
-	seqLen--;
-	nseq++;
+	/* return if shorter than 2 bases */
+	if (seqLen <= 3) {
+		return max_v;
+	}
 
 	prev_line = (prev_line_t *)calloc((seqLen + 1), sizeof(prev_line_t));
 
 	prev_line[seqLen].nseq = -1; /* end of sequence token */
 
 								 /* init prev_line by the scores for first line in the profile */
-	for (x = 0, pre = prev_line, prof_line_p = prof->data; x < seqLen; x++, pre++)
+
+	for (x = 0; x<seqLen; x++)
 	{
-		pre->nseq = nseq[x];
-		pre->prequal = prof_line_p[pre->nseq];
-		/*if( pre->prequal<0 ) pre->prequal=0;
-		else */ checkbest(pre->prequal, x + 1, 1, max_v);
-		pre->yskipmatch = MS_SCORE_MININF;
+		prev_line[x].nseq = nseq[x];
+		prev_line[x].prequal = prof->data[prev_line[x].nseq];
+		prev_line[x].yskipmatch = MS_SCORE_MININF;
+		checkbest(prev_line[x].prequal, x, 0, max_v);
 	}
 
 	/* loop on profile lines 1..(profLen-1) */
 	/* prof_line_p already set to prof->data */
-	for (y = 1; y < profLen; y++)
+	prof_line_p = prof->data;
+
+	for (y = 1; y<profLen; y++)
 	{
-		pre = prev_line; /* pointer to line of state scores in DP matrix */
+		/* init sequence/state array */
+		pre = prev_line + 3; /* first 3 are empty anyway */
 
-						 /* gap penalties with '1' for line 'n' are kept in line 'n-1' */
-		penopen1 = prof_line_p[MS_SW_OFFSET_GAPOP1];
-		penext1 = prof_line_p[MS_SW_OFFSET_GAPEX1];
+							 /* gap penalties for line n are stored in line n-1 */
+		xopen1 = prof_line_p[MS_FRAMEPLUS_OFFSET_xopen1];
+		xext1 = prof_line_p[MS_FRAMEPLUS_OFFSET_xext1];
+		fx1 = prof_line_p[MS_FRAMEPLUS_OFFSET_fx1];
 
-		/* next line */
-		prof_line_p += prof->line_size;
 
-		quality = prof_line_p[pre->nseq];
-		/*if(quality<0) quality=0;
-		else*/ checkbest(quality, 1, y + 1, max_v);
-		lastquality = quality;
+		/* go to the next profile line */
+		prof_line_p = prof->data + y * prof->line_size; /* prof_line_p+=prof->line_size; */
 
-		xskipmatch = MS_SCORE_MININF;
-		penopen = prof_line_p[MS_SW_OFFSET_GAPOP];
-		penext = prof_line_p[MS_SW_OFFSET_GAPEX];
+		matchmax5 = prof_line_p[MS_FRAMEPLUS_OFFSET_matchmax5];
+		matchmax6 = prof_line_p[MS_FRAMEPLUS_OFFSET_matchmax6];
+		yopen1 = prof_line_p[MS_FRAMEPLUS_OFFSET_yopen1];
+		yopen2 = prof_line_p[MS_FRAMEPLUS_OFFSET_yopen2];
+		yopen3 = prof_line_p[MS_FRAMEPLUS_OFFSET_yopen3];
+		yext = prof_line_p[MS_FRAMEPLUS_OFFSET_yext];
 
-		/* take the smaller positive value */
-		/* SWAT1 */pentest = min_2(-penopen, -penopen1);
+		/* constant */
+		fext = prof_line_p[MS_FRAMEPLUS_OFFSET_fext];
+		f_open = prof_line_p[MS_FRAMEPLUS_OFFSET_fopen]; /* fopen is a std. function name too ? */
+
+
+
+		for (k = 0; k<3; k++)
+		{
+			xskipmatch[k] = MS_SCORE_MININF;
+			fskipmatch[k] = MS_SCORE_MININF;
+			ytest[k] = MS_SCORE_MININF;
+			quality[k] = MS_SCORE_MININF;
+		}
+
+		k0 = 0; k1 = 1; k2 = 2; k3 = 3;
+
+		/*x=3, put into k2 */
+		quality[k2] = pre->prequal;
+		q_new = prof_line_p[pre->nseq];
+		checkbest(q_new, 3, y, max_v);
+		pre->prequal = q_new;
+
+		ytest[k2] = pre->yskipmatch;
+		y_new = ytest[k2] + yext;
+		scoretype_max(y_new, quality[k2] + yopen1);
+		pre->yskipmatch = y_new;
+
 		pre++;
 
 		/* loop on sequence positions */
-		/* 1..(seqLen-1), but prequal and yskip are virtually one step behind:
-		0..(seqLen-2) */
+		/* x = 4..(seqLen-1) */
 		while (pre->nseq >= 0)
 		{
-			score = prof_line_p[pre->nseq]; /* profile value for match */
-			quality = pre->prequal;
-			yskipmatch = pre->yskipmatch;
+			score = prof_line_p[pre->nseq];
+			quality[k3] = pre->prequal;
+			ytest[k3] = pre->yskipmatch;
 
 #if _COUNT
 			count0++;
 			if (xskipmatch <= 0) count1++;
-			if (yskipmatch <= 0) count2++;
-			if (xskipmatch <= 0 && yskipmatch <= 0) count12++;
+			if (ytest <= 0) count2++;
+			if (xskipmatch <= 0 && ytest <= 0) count12++;
 			if (quality <= pentest) count3++;
-			if (quality <= pentest && yskipmatch <= 0) count13++;
-			if (xskipmatch <= 0 && yskipmatch <= 0 && quality <= pentest) count123++;
+			if (quality <= pentest && ytest <= 0) count13++;
+			if (xskipmatch <= 0 && ytest <= 0 && quality <= pentest) count123++;
 #endif
 
-#define _SWATS 1
-#if _SWATS
-			if (yskipmatch <= 0) {
-				if (xskipmatch <= 0) { /* yskipmatch <= 0 and xskipmatch <= 0 */
 
-					if (quality <= 0) {
-						quality = 0;
-					}
-					else {
-						if (quality > pentest) {
-							xskipmatch = quality + penopen;
-							pre->yskipmatch = quality + penopen1;
-						}
-						checkbest(quality, pre - prev_line, y, max_v)
-					}
+			/* xskipmatch[k3] */
 
-				}
-				else {               /* yskipmatch <= 0 && xskipmatch > 0 */
-					if (quality <= 0) {
-						quality = xskipmatch;
-						xskipmatch += penext;
-					}
-					else {
-						register scoretype bestjump, bestjump1;
-						bestjump1 = quality + penopen1;
-						/*if (bestjump1 > 0)*/ pre->yskipmatch = bestjump1;
+			xskipmatch[k3] = xskipmatch[k0] + xext1;
+			scoretype_max(xskipmatch[k3], fskipmatch[k0] + fx1);
+			scoretype_max(xskipmatch[k3], quality[k0] + xopen1);
 
-						if (quality < xskipmatch) { /* q<0 handled here */
-							quality = xskipmatch;
-							xskipmatch += penext;  /* assuming penopen<penext @@ test input */
-						}
-						else {
-							xskipmatch += penext;
-							bestjump = quality + penopen;
-							if (bestjump > xskipmatch) xskipmatch = bestjump;
-							checkbest(quality, pre - prev_line, y, max_v)
-						}
-					}
+			/* fskipmatch */
+			fskipmatch[k3] = fskipmatch[k2] + fext;
+			scoretype_max(fskipmatch[k3], quality[k2] + f_open);
 
-				}
-			}
-			else { /* yskip > 0 */
-				if (xskipmatch <= 0) {  /* yest > 0 and xskipmatch <= 0 */
-					if (quality <= 0) {
-						quality = yskipmatch;
-						yskipmatch += penext1;
-					}
-					else {
-						register scoretype bestjump, bestjump1;
-						bestjump = quality + penopen;
-						/*if (bestjump > 0)*/ xskipmatch = bestjump;
+			/* match */
+			q_new = 0; /* V: Local alignment? */
+			scoretype_max(q_new, quality[k0]);
+			scoretype_max(q_new, ytest[k0]);
+			scoretype_max(q_new, xskipmatch[k0]);
+			scoretype_max(q_new, fskipmatch[k0]);
 
-						if (quality < yskipmatch) { /* q<0 handled here */
-							quality = yskipmatch;
-							yskipmatch += penext1; /* assuming penopen1<penext1 */
-						}
-						else {
-							yskipmatch += penext1;
-							bestjump1 = quality + penopen1;
-							if (bestjump1 > yskipmatch) yskipmatch = bestjump1;
-							checkbest(quality, pre - prev_line, y, max_v)
-						}
-					}
+			q_new += score;
 
-				}
-				else { /* xskipmatch > 0 && yskipmatch > 0 */
+			/* These are not exactly Match transitions, do not add score */
+			scoretype_max(q_new, quality[k1] + matchmax5);
+			scoretype_max(q_new, quality[k2] + matchmax6);
 
-					if (quality < xskipmatch) {
+			/* y - now can rewrite y */
+			y_new = ytest[k3] + yext;
+			scoretype_max(y_new, quality[k3] + yopen1);
+			scoretype_max(y_new, quality[k2] + yopen2);
+			scoretype_max(y_new, quality[k1] + yopen3);
 
-						if (quality < yskipmatch) { /* q<0 handled here */
-							if (yskipmatch > xskipmatch) quality = yskipmatch;
-							else                  quality = xskipmatch;
-							yskipmatch += penext1; /* assuming penopen1<penext1 */
-						}
-						else {
-							register scoretype bestjump1;
-							yskipmatch += penext1;
-							bestjump1 = quality + penopen1;
-							if (bestjump1 > yskipmatch) yskipmatch = bestjump1;
-							quality = xskipmatch;
-						}
+			pre->yskipmatch = y_new;
+			pre->prequal = q_new;
 
-						xskipmatch += penext;  /* assuming penopen<penext */
-					}
-					else { /* quality>=xskipmatch */
-						register scoretype bestjump, bestjump1;
-						xskipmatch += penext;
-						bestjump = quality + penopen;
-						if (bestjump > xskipmatch) xskipmatch = bestjump;
-
-
-						if (quality < yskipmatch) {
-							quality = yskipmatch;
-							yskipmatch += penext1; /* assuming penopen1<penext1 */
-						}
-						else {
-							checkbest(quality, pre - prev_line, y, max_v)
-								yskipmatch += penext1;
-							bestjump1 = quality + penopen1;
-							if (bestjump1 > yskipmatch) yskipmatch = bestjump1;
-						}
-
-					} /* quality>=xskipmatch */
-
-				} /* yskipmatch test */
-
-				pre->yskipmatch = yskipmatch;
-			} /* xskipmatch test */
-
-#else /* _SWATS */
-
-			/* first optimization SWAT1 */
-			/**
-			if (xskipmatch <= 0 && yskipmatch <= 0 && quality<=pentest) {
-			#if _COUNT
-			count1++;
-			#endif
-			} else {
-			* */
+			checkbest(q_new, pre - prev_line, y, max_v);
 			{
-				bestjump = quality + penopen;
-				bestjump1 = quality + penopen1;
-				checkbest(quality, pre - prev_line, y, max_v)
-
-					/* second optimization SWAT2 */
-					/**/ if (xskipmatch <= 0 && yskipmatch <= 0) {
-						xskipmatch = bestjump;
-						yskipmatch = bestjump1;
-					}
-					else
-					{
-
-						/*  */
-						if (quality >= xskipmatch) {
-							if (quality < yskipmatch) quality = yskipmatch;
-						}
-						else if (xskipmatch >= yskipmatch) quality = xskipmatch;
-						else                         quality = yskipmatch;
-
-
-
-						xskipmatch += penext;
-						if (bestjump >= xskipmatch)
-							xskipmatch = bestjump;
-
-						yskipmatch += penext1;
-						if (bestjump1 >= yskipmatch)
-							yskipmatch = bestjump1;
-					}
+				int i_tmp;
+				i_tmp = k0; k0 = k1; k1 = k2; k2 = k3; k3 = i_tmp;
+				pre++;
 			}
-			pre->yskipmatch = yskipmatch;
-			if (quality < 0) quality = 0;
-#endif /* _SWATS */
-
-			quality += score;
-			/*optimize out @@ if(quality<0) quality=0;
-			else */
-
-			pre->prequal = lastquality;
-			pre++;
-			lastquality = quality;
 		} /* sequence loop */
-		checkbest(quality, seqLen, y + 1, max_v)
+
+		  /*   checkbest(quality[k2], seqLen, y+1, max_v)*/
 
 	} /* profile loop */
 
-	for (x = 1, pre = prev_line + 1; x < seqLen; x++)
-	{
-		checkbest(pre->prequal, x, profLen, max_v)
-			pre++;
-	}
+	  /*   for(x=1, pre = prev_line+1;x<seqLen;x++) */
+	  /*   { */
+	  /*     checkbest(pre->prequal, x, profLen, max_v) */
+	  /*     pre++; */
+	  /*   } */
 
-	/*max_v.x--;*//*since we skip the spare base at the beginning, we don't need to adjust the index anymore here */
-	max_v.y--;
+	  /*  max_v.x--;max_v.y--;*/
 
 	free(prev_line);
 
@@ -391,7 +307,9 @@ static best_t MS_Score_SW(seqtype* nseq, ms_profile_t *prof, int profLen, int se
 	}
 
 	return max_v;
-	} /* MS_Score_SW() */
+} /* MS_Score_FRAMEPLUS_P2N() */
+
+
 
 #define MIN_DSP_NEGATIVE -1000
   /*** Gencore profile ***/
@@ -472,8 +390,10 @@ typedef struct inpf {
 
 double fp_gencore(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
 {
-	int read_base = 16;
-	int line_size = 36;
+	/* model->profile_line_size = 66;  len of raw prof*/
+	//MS_gcprofile_parts_bounds(model, &read_base, &line_size); gets own frame plus profile from model file
+	int read_base = 20; /*shift in raw profile*/
+	int line_size = 46; /*32 matrix + 14 gaps*/
 	float *data_from;
 	scoretype *data_to;
 	float scale = sp->mtx->scale;
@@ -482,21 +402,30 @@ double fp_gencore(const search_fp_profile_t * sp, const sequence_t * dseq, const
 	ms_profile->scaleback = 1.0 / sp->mtx->scale;
 	ms_profile->line_size = line_size;
 	int prof_length = qseq->len + 1; // INT_MIN + seq(i-1)
-	int prf_len = (prof_length)* PROFILE_LINE_SIZE * sizeof(float);
+	int prf_len = (prof_length)* FP_PROFILE_LINE_SIZE * sizeof(float);
 	float *prof_data = (float *)malloc(prf_len);
 
 	for (size_t j = 0; j < PROFILE_EMISSIONS_NO; j++)
 		PROFILE_VAL(prof_data, 0/* *32+6=38*/, j) = INT_MIN; /*sigaev: global aligment*/
 
 															 /* gap penalties copied from first line */
-	prof_data[PROFILE_GAPOP] = sp->gapOpen;
-	prof_data[PROFILE_GAPEXT] = sp->gapExt;
-	prof_data[PROFILE_QGAPOP] = sp->gapOpen;
-	prof_data[PROFILE_QGAPEXT] = sp->gapExt;
+	prof_data[MS_FRAMEPLUS_OFFSET_matchmax5] = sp->matchMax5;	//32
+	prof_data[MS_FRAMEPLUS_OFFSET_matchmax6] = sp->matchMax6;	//33
+	prof_data[MS_FRAMEPLUS_OFFSET_xopen1] = sp->gapOpen;		//43
+	prof_data[MS_FRAMEPLUS_OFFSET_xext1] = sp->gapExt;			//44
+	prof_data[MS_FRAMEPLUS_OFFSET_fopen] = sp->gapFrameOpen;	//37
+	prof_data[MS_FRAMEPLUS_OFFSET_fext] = sp->gapFrameExt;		//38
+	prof_data[MS_FRAMEPLUS_OFFSET_yopen1] = sp->gapOpen;		//39
+	prof_data[MS_FRAMEPLUS_OFFSET_yopen2] = sp->gapOpen2;		//40
+	prof_data[MS_FRAMEPLUS_OFFSET_yopen3] = sp->gapOpen3;		//41
+	prof_data[MS_FRAMEPLUS_OFFSET_yext] = sp->gapExt;			//42
+	prof_data[MS_FRAMEPLUS_OFFSET_fx1] = sp->gapFrame;			//45 latest
+	/* @@ next 3 fields are not used */
+	//	MS_FRAMEPLUS_OFFSET_xopen, MS_FRAMEPLUS_OFFSET_xext, MS_FRAMEPLUS_OFFSET_fx,
+	prof_data[MS_FRAMEPLUS_OFFSET_xopen] = 0.0;					//34
+	prof_data[MS_FRAMEPLUS_OFFSET_xext] = 0.0;					//35
+	prof_data[MS_FRAMEPLUS_OFFSET_fx] = 0.0;					//35
 
-	prof_data[PROFILE_BEGIN] = 0;  //36
-	prof_data[PROFILE_END] = INT_MIN; //37
-//	printf("!!!!\n");
 
 	for (size_t i = 1; i < prof_length; i++) {
 		int k = qseq->seq[i - 1];
@@ -510,12 +439,23 @@ double fp_gencore(const search_fp_profile_t * sp, const sequence_t * dseq, const
 			PROFILE_VAL(prof_data, i/* *32+6=38*/, j) = v; //create profile line from  32 CM("A") to 38 (36-39: 1,1,1,1,0,0)
 		}
 																				  // prof_data[(i)*PROFILE_LINE_SIZE + (j)] == prof_data[(i)*38 + (j)]
-		PROFILE_VAL(prof_data, i, PROFILE_GAPOP) = sp->gapOpen;  //prof_data[(i) * 38 + 32]
-		PROFILE_VAL(prof_data, i, PROFILE_GAPEXT) = sp->gapExt; //prof_data[(i) * 38 + 33]
-		PROFILE_VAL(prof_data, i, PROFILE_QGAPOP) = sp->gapOpen; //prof_data[(i) * 38 + 34]
-		PROFILE_VAL(prof_data, i, PROFILE_QGAPEXT) = sp->gapExt;//prof_data[(i) * 38 + 35]
-		PROFILE_VAL(prof_data, i, PROFILE_BEGIN) = 0.0;  //prof_data[(i) * 38 + 36]
-		PROFILE_VAL(prof_data, i, PROFILE_END) = 0.0; //prof_data[(i) * 38 + 37]
+
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_matchmax5) = sp->matchMax5;	//32
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_matchmax6) = sp->matchMax6;	//33
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_xopen1) = sp->gapOpen;		//43
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_xext1) = sp->gapExt;			//44
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_fopen) = sp->gapFrameOpen;	//37
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_fext) = sp->gapFrameExt;		//38
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_yopen1) = sp->gapOpen;		//39
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_yopen2) = sp->gapOpen2;		//40
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_yopen3) = sp->gapOpen3;		//41
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_yext) = sp->gapExt;			//42
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_fx1) = sp->gapFrame;			//45 latest
+		/* @@ next 3 fields are not used */
+		//	MS_FRAMEPLUS_OFFSET_xopen, MS_FRAMEPLUS_OFFSET_xext, MS_FRAMEPLUS_OFFSET_fx,
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_xopen) = 0.0;					//34
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_xext) = 0.0;					//35
+		PROFILE_VAL(prof_data, i, MS_FRAMEPLUS_OFFSET_fx) = 0.0;					//35
 	}
 
 	ms_profile->data = (scoretype *)malloc(sizeof(scoretype) * ms_profile->line_size * prof_length);
@@ -531,7 +471,7 @@ double fp_gencore(const search_fp_profile_t * sp, const sequence_t * dseq, const
 											/* First model->max_dprf profile lines are not actual lines but are added
 											so that algorithm could go beyond the boundary and first lines would
 											not be special cases. MS computes first lines separately. */
-			data_from = &(prof_data[(i + 0/*0== SoftInfo_g.model->max_dprf*/) * PROFILE_LINE_SIZE]);
+			data_from = &(prof_data[(i + 0/*0== SoftInfo_g.model->max_dprf*/) * FP_PROFILE_LINE_SIZE]);
 			data_to = &(ms_profile->data[i*ms_profile->line_size]);
 
 			for (size_t j = 0; j < line_size; j++) { /* for each position in the profile */
@@ -555,7 +495,7 @@ double fp_gencore(const search_fp_profile_t * sp, const sequence_t * dseq, const
 		ms_sequence[r+1] = dseq->seq[r];
 	}
 	inpf_t max_v;
-	best_t max_s = MS_Score_SW(ms_sequence, ms_profile, prof_length, dseq->len+1);
+	best_t max_s = MS_Score_FP(ms_sequence, ms_profile, prof_length, dseq->len+1);
 	max_v.score = ((float)(max_s.score)) * ms_profile->scaleback;
 	max_v.x = max_s.x;
 	max_v.y = max_s.y;
