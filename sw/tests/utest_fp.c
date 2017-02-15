@@ -37,8 +37,17 @@ START_TEST(test_fp_first_refference_test)
 	seq2encodedseq(inseq2, enseq2, lal_encode31);
 	seq2encodedseq((sequence_t){ 3, &any_symbol, 1 }, any, lal_encode31);
 	mtx.scale = 10.0;
-	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0] };
-	double score = sw_gencore(&sp, &enseq2, &enseq1);
+	search_fp_profile_t sp = { -10.5,/*gapOpen */\
+		-0.5,/*	gapExt */\
+		-10.5,  /*gapFrame*/ \
+		-13.0, /* matchMax5 */ \
+		-20.0, /* matchMax6 */ \
+		-30.0, /*gapOpen2 */\
+		-23.0, /*gapOpen3 */ \
+		-7.0, /* gapFrameOpen */ \
+		-13.0, /* gapFrameExt */ \
+		(!status) ? (NULL) : (&mtx), any.seq[0] };
+	double score = fp_gencore(&sp, &enseq2, &enseq1);
 	ck_assert_int_eq((int)score, 7);
 }END_TEST
 
