@@ -123,6 +123,7 @@
     <ClCompile Include="..\..\sw\lal_scoring_matrix.c" />
     <ClCompile Include="..\..\sw\lal_matrix.c" />
     <ClCompile Include="..\..\sw\lal_tables.c" />
+    <ClCompile Include="..\..\sw\lal_translate_table.c" />
     <ClCompile Include="..\..\sw\sw.c" />
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +134,7 @@
     <ClInclude Include="..\..\sw\lal_report.h" />
     <ClInclude Include="..\..\sw\lal_scoring_matrix.h" />
     <ClInclude Include="..\..\sw\lal_tables.h" />
+    <ClInclude Include="..\..\sw\lal_translate_table.h" />
     <ClInclude Include="..\..\sw\lal_typedefs.h" />
     <ClInclude Include="..\..\sw\sw.h" />
   </ItemGroup>
