@@ -10,4 +10,5 @@ void addGSSTC(Suite *s);
 void addSWTC(Suite *s);
 void addFPTC(Suite *s);
 void addScoringMatrixTC(Suite *s);
+void addTranslateTableTC(Suite *s);
 #endif /* _CHECK_ALGORITHMS_H_ */

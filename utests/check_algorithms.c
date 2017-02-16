@@ -20,6 +20,7 @@ Suite* algorithms_suite(void)
 	addSWTC(s);
 	addScoringMatrixTC(s);
 	addFPTC(s);
+	addTranslateTableTC(s);
 	return s;
 }
 

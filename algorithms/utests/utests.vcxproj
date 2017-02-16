@@ -131,6 +131,7 @@
     <ClCompile Include="..\..\sw\tests\utest_fp.c" />
     <ClCompile Include="..\..\sw\tests\utest_sw.c" />
     <ClCompile Include="..\..\sw\tests\utest_scoring_matrix.c" />
+    <ClCompile Include="..\..\sw\tests\utest_translate_table.c" />
     <ClCompile Include="..\..\utests\check_algorithms.c" />
   </ItemGroup>
   <ItemGroup>
