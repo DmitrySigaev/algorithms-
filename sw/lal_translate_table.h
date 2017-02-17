@@ -12,8 +12,14 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 
 #define MAX_LINE_LEN  1024
 #define MAX_DOC_LEN   (MAX_LINE_LEN*4)
+#define NUCL_ACID_NUM 16
+
+typedef unsigned char TransTable_t[NUCL_ACID_NUM][NUCL_ACID_NUM][NUCL_ACID_NUM];
+typedef unsigned char IntTransTable_t[NUCL_ACID_NUM][NUCL_ACID_NUM][NUCL_ACID_NUM];
 
 typedef struct tag_translate_table {
+	TransTable_t TheTable;
+	IntTransTable_t TheIntTable;
 	char Doc[MAX_DOC_LEN];
 } translate_table_t;
 
