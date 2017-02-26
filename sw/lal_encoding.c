@@ -16,7 +16,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 * @param enseq   the new coded sequence
 * @param encode  the encode table
 */
-void seq2encodedseq(sequence_t inseq, sequence_t enseq, const char* encode) {
+void lal_seq2encodedseq(sequence_t inseq, sequence_t enseq, const char* encode) {
 	size_t illicit_symbol = 0;
 	for (size_t i = 0; i < inseq.len; i++) {
 		char cm;
@@ -43,7 +43,7 @@ void seq2encodedseq(sequence_t inseq, sequence_t enseq, const char* encode) {
 * @param encode  the encode table (nucleic triplets)
 * @param tt      the translate table (amino-acid translation)
 */
-void seq2encodedseq_trans(sequence_t inseq, sequence_t enseq, const char* encode, translate_table_t *tt) {
+void lal_seq2encodedseq_trans(sequence_t inseq, sequence_t enseq, const char* encode, translate_table_t *tt) {
 	size_t illicit_symbol = 0;
 	/* code the amino - acids from nucleic triplets */
 	for (int i = 0; i < inseq.len + 1; i++) {
@@ -54,10 +54,19 @@ void seq2encodedseq_trans(sequence_t inseq, sequence_t enseq, const char* encode
 	}
 //	enseq.seq[enseq.len] = LAL_NONEXISTENT;
 }
-void lal_reverse(const char * source, int len, char *dest, const char *reverse_tab)
+
+/**
+* Create reversed strands
+*
+* @param source  the input sequence that should be reversed
+* @param len     the length of sequnce
+* @param enseq   the new revers sequence
+* @param encode  the reverse table 
+*/
+void lal_reverse(const char * source, size_t len, char *dest, const char *reverse_tab)
 {
 	char *ptmp;
-	if (len <= 0) return;
+	if (!len) return;
 	ptmp = dest + (len - 1);
 	while (len--)
 		*ptmp-- = reverse_tab[*source++];
