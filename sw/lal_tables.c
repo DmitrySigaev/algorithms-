@@ -30,12 +30,12 @@ const unsigned char lal_encode31[] = {
 * Contains the numerical representation of the complementary nucleotide symbol.
 */
 const char cns[31] = { 19,21,6,7,26,26,2,3,26,26,12,26,10,13,26,26,26,24,18,0,0,1,22,13,17,26,26,26,26,26,26 };
-const char lal_decode31_s[31] = { 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','.','*','+','&','@' };
+const char lal_decode31[31] = { 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','.','*','+','&','@' };
 
 /*
 * Contains the symbol representation of the complementary nucleotide symbol.
 */
-const char lal_revers31_s[256] = {
+const char lal_revers31[256] = {
 	'.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',
 	'.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',
 	'.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',  '.',
@@ -75,7 +75,7 @@ const unsigned char  lal_na2indx[256] =
 };
 
 
-char identity_nuc[] = { " #  Matrix                                           \n \
+const char identity_nuc[] = { " #  Matrix                                    \n \
     A    B    C    D    G    H    K    M    R    S    T    U    V    W    Y  \n \
 A  1.0 -0.6 -0.6  0.2 -0.6  0.2 -0.6  0.6  0.6 -0.6 -0.6 -0.6  0.2  0.6 -0.6 \n \
 B -0.6  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2 \n \
@@ -93,7 +93,7 @@ V  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2  0.2 -0.6 -0.6  0.2  0.2  0.2 \n 
 W  0.6  0.2 -0.6  0.2 -0.6  0.2  0.6  0.6  0.6 -0.6  0.6  0.6  0.2  0.6  0.6 \n \
 Y -0.6  0.2  0.6  0.2 -0.6  0.2  0.6  0.6 -0.6  0.6  0.6  0.6  0.2  0.6  0.6 " };
 
-char blosum100[] = { "#  Matrix made by matblas from blosum100_3.iij         \n \
+const char blosum100[] = { "#  Matrix made by matblas from blosum100_3.iij   \n \
 #  * column uses minimum score                                               \n \
 #  BLOSUM Clustered Scoring Matrix in 1/3 Bit Units                          \n \
 #  Blocks Database = /data/blocks_5.0/blocks.dat                             \n \
@@ -126,7 +126,7 @@ X -2 -3 -3 -4 -5 -2 -3 -4 -4 -3 -3 -3 -3 -4 -4 -2 -2 -6 -4 -3 -4 -2 -3 -10   \n 
 * -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10  1 " };
 
 
-char gaptest1[] = { " #gaptest1.table                                          \n \
+const char gaptest1[] = { " #gaptest1.table                                    \n \
     A    B    C    D    G    H    K    M    R    S    T    U    V    W    Y    \n \
 A  2.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0   \n \
 B -1.0  2.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0   \n \
@@ -144,7 +144,7 @@ V -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0  2.0 -1.0 -1.0   \
 W -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0  2.0 -1.0   \n \
 Y -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0  2.0" };
 
-char blosum62[] = { "#  Matrix made by matblas from blosum62.iij            \n \
+const char blosum62[] = { "#  Matrix made by matblas from blosum62.iij      \n \
 #  * column uses minimum score                                              \n \
 #  BLOSUM Clustered Scoring Matrix in 1/2 Bit Units                         \n \
 #  Blocks Database = /data/blocks_5.0/blocks.dat                            \n \
@@ -177,7 +177,8 @@ X  0 -1 -1 -1 -2 -1 -1 -1 -1 -1 -1 -1 -1 -1 -2  0  0 -2 -1 -1 -1 -1 -1 -4   \n \
 * -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4  1  \n " };
 
 
-const char human40[] = { "#Genetic code file > Standard genetic code  \n \
+const char human40[] = {
+"#Genetic code file > Standard genetic code \n \
 #base A frequency 0.313393                  \n \
 #base C frequency 0.206870                  \n \
 #base G frequency 0.217274                  \n \
