@@ -30,8 +30,8 @@ START_TEST(test_encoding_290)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 
 
 	sequence_t reverse1 = { 3, malloc(len1 + 1), len1 };
@@ -52,7 +52,7 @@ START_TEST(test_encoding_290)
 
 	sequence_t inrev1 = { 3, (char *)rev1, len1 };
 	sequence_t enrev1 = { 3, malloc(len1 + 1), len1 };
-	seq2encodedseq(inrev1, enrev1, lal_encode31);
+	lal_seq2encodedseq(inrev1, enrev1, lal_encode31);
 
 	for (size_t i = 0; i < reverse1.len; i++) {
 		ck_assert_int_eq((int)reverse1.seq[i], (int)enrev1.seq[i]); 
@@ -71,8 +71,8 @@ START_TEST(test_encoding_261)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 
 
 	sequence_t reverse1 = { 3, malloc(len1 + 1), len1 };
@@ -92,7 +92,7 @@ START_TEST(test_encoding_261)
 
 	sequence_t inrev1 = { 3, (char *)rev1, len1 };
 	sequence_t enrev1 = { 3, malloc(len1 + 1), len1 };
-	seq2encodedseq(inrev1, enrev1, lal_encode31);
+	lal_seq2encodedseq(inrev1, enrev1, lal_encode31);
 
 	for (size_t i = 0; i < reverse1.len; i++) {
 		ck_assert_int_eq((int)reverse1.seq[i], (int)enrev1.seq[i]);
