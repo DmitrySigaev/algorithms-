@@ -12,4 +12,5 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 
 double fp_gencore(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq);
 double fp_gencore_matrix(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq);
+double fp_gencore_seq(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq);
 #endif /* _GC_FP_H_ */
