@@ -38,8 +38,8 @@ START_TEST(test_sw_double_encoded)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swcg_profile_t sp = { -1, NULL };
 	double score = sw_constant_gap_double(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 2); /* Max score */
@@ -57,8 +57,8 @@ START_TEST(test_sw_double_encoded_vtable)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swcg_profile_t sp = { -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_constant_gap_double(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 5); /* Max score */
@@ -105,8 +105,8 @@ START_TEST(test_sw_int_encoded_vtable)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swcg_profile_int_t sp = { -1, (!status) ? (NULL) : (&mtx) };
 	int64_t score = sw_constant_gap_int(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 5); /* Max score */
@@ -139,8 +139,8 @@ START_TEST(test_sw_affine_double_encoded_vtable)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 5); /* Max score */
@@ -159,8 +159,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_195)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 195); /* Max score */
@@ -179,8 +179,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_195swipe)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 195); /* Max forward score */
@@ -203,8 +203,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_195gencore)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_gencore(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 195); /* Max score */
@@ -222,8 +222,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_88)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 88); /* Max score */
@@ -241,8 +241,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_87swipe)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 87); /* Max forward score */
@@ -262,8 +262,8 @@ START_TEST(test_sw_affine_double_encoded_vtable_88gencore)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_gencore(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 88); /* Max score */
@@ -288,8 +288,8 @@ START_TEST(test_sw_gaptest1_261_88gencore)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_gencore(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 88);
@@ -321,8 +321,8 @@ START_TEST(test_sw_gaptest1_261_89gotoh)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 89);
@@ -354,8 +354,8 @@ START_TEST(test_sw_gaptest1_261_90swipe)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 89); /* Max forward score */ 
@@ -384,8 +384,8 @@ START_TEST(test_sw_gaptest1_290_90_194gencore)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_gencore(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 90);
@@ -411,8 +411,8 @@ START_TEST(test_sw_gaptest1_290_90_194gotoh)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 90);
@@ -439,8 +439,8 @@ START_TEST(test_sw_gaptest1_290_91_194swipe)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 90); /* Max forward score */ // ok
@@ -469,8 +469,8 @@ START_TEST(test_sw_gaptest1_290_89_193swdirection)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	score_matrix_t sd = sw_directions(&sp, &enseq1, &enseq2);
 	element_t score = find_max(&sd.score);
@@ -502,8 +502,8 @@ START_TEST(test_sw_gaptest1_290_76_194constant)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swcg_profile_t sp = { -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_constant_gap_double(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 76); /* Max score */ // המכהום בûעü 89
@@ -530,8 +530,8 @@ START_TEST(test_sw_gaptest1_290_89_193swdirection2)
 	sequence_t inseq2 = { 2, (char *)seq2, len2 };
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	score_matrix_t sd = sw_directions(&sp, &enseq1, &enseq2);
 	element_t score = find_max(&sd.score);
@@ -567,9 +567,9 @@ START_TEST(test_sw_ACHA_ELEEL_test)
 	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
 	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
 	sequence_t any = { 3, malloc(1 + 1), 1 };
-	seq2encodedseq(inseq1, enseq1, lal_encode31);
-	seq2encodedseq(inseq2, enseq2, lal_encode31);
-	seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
+	lal_seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
 	mtx.scale = 10.0;
 	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0] };
 	double score = sw_gencore(&sp, &enseq2, &enseq1);
