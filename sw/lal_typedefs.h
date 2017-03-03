@@ -58,8 +58,20 @@ typedef struct tag_search_swag_profile
 	double gapExt;
 	scoring_matrix_t *mtx;
 	char any_symbol;
+	size_t max_query_len;
 } search_swag_profile_t;
 
+/**
+*  Structure of a search thread depended profile
+*  @typedef {struct} search_thr_profile_t
+*  @field hearray  zero inital sequence
+*/
+typedef struct tag_search_thr_profile
+{
+	double *h;
+	double *e;
+	search_swag_profile_t *sp;
+} search_thr_profile_t;
 
 /**
 *  Structure of a search profile for frame plus algorithm 

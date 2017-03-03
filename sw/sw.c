@@ -348,3 +348,60 @@ score_matrix_t sw_directions(const search_swag_profile_t * sp, const sequence_t 
 
 	return (score_matrix_t){ score_mat, directions_mat };
 }
+
+static double sw_ms(search_thr_profile_t *s, const sequence_t * dseq, const sequence_t * qseq)
+{
+	const search_swag_profile_t *sp = s->sp;
+	double *ph = s->h;
+	double *pe = s->e;
+	double v;
+	double F, global_max = 0, h11, h01;
+
+	for (size_t i = 0; i < dseq->len; i++) {
+		F = 0;
+		h11 = 0;
+		for (size_t j = 0; j < qseq->len; j++) {
+			if (!sp->mtx)
+				v = SCORE(dseq->seq[i], qseq->seq[j], 1.0, -1.0);
+			else
+				v = VDTABLE(dseq->seq[i], qseq->seq[j]);
+
+			h01 = ph[j];
+			ph[j] = MAX(MAX(MAX(h11, pe[j]), F) + v, 0);
+			global_max = MAX(global_max, ph[j]);
+			pe[j] = MAX(h11 + sp->gapOpen, pe[j] + sp->gapExt);
+			F = MAX(h11 + sp->gapOpen, F + sp->gapExt);
+			h11 = h01;
+		}
+	}
+
+	return global_max;
+}
+
+double sw_thr(search_thr_profile_t * sp, const sequence_t *dseq, const sequence_t *qseq) {
+	search_swag_profile_t *s = sp->sp;
+	memset(sp->h, 0, sizeof(double) * (qseq->len));
+	memset(sp->e, 0, sizeof(double) * (qseq->len));
+	return sw_ms(sp, dseq, qseq);
+}
+
+
+search_thr_profile_t * search_thr_init(search_swag_profile_t *s, size_t thr)
+{
+	search_thr_profile_t * sthr = malloc(sizeof(search_thr_profile_t) * thr);
+	for (size_t i = 0; i < thr; i++) {
+			sthr[i].h = malloc(sizeof(double) * s->max_query_len);
+			sthr[i].e = malloc(sizeof(double) * s->max_query_len);
+			sthr[i].sp = s;
+	}
+	return sthr;
+}
+
+void search_thr_deinit(search_thr_profile_t * sthr, size_t thr)
+{
+	for (size_t i = 0; i < thr; i++) {
+		free(sthr[i].h);
+		free(sthr[i].e);
+	}
+	free(sthr);
+}
