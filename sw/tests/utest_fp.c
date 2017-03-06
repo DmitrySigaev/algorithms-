@@ -176,11 +176,11 @@ START_TEST(test_fp_first_refference_test_trans_seq)
 		- 7.0, /* gapFrameOpen */ \
 		- 13.0, /* gapFrameExt */ \
 		(!status) ? (NULL) : (&mtx), any.seq[0] };
-	double score = fp_gencore_matrix(&sp, &enseq2, &enseq1);
+	double score = fp_gencore_seq(&sp, &enseq2, &enseq1);
 	ck_assert_int_eq((int)score, 15);
 	lal_reverse(inseq2.seq, inseq2.len, inseqrev.seq, lal_revers31);
 	lal_seq2encodedseq_trans(inseqrev, enseqrev, lal_na2indx, &tt);
-	score = fp_gencore_matrix(&sp, &enseqrev, &enseq1);
+	score = fp_gencore_seq(&sp, &enseqrev, &enseq1);
 	ck_assert_int_eq((int)score, 12);
 	free_scoring_matrix(&mtx);
 
