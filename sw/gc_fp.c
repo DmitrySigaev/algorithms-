@@ -807,8 +807,8 @@ tag_align score_frameplus_p2n_opt(const search_fp_profile_t * sp, const sequence
 			const double yopen3 = sp->gapOpen3;		//41
 			const double yext = sp->gapExt;			//42
 																			 /* constant */
-			const score_t fext = sp->gapFrameExt;		//38
-			const score_t f_open = sp->gapFrameOpen;	//37
+			const double fext = sp->gapFrameExt;	//38
+			const double f_open = sp->gapFrameOpen;	//37
 			double v;
 			if (!sp->mtx)
 				v = SCORE(qseq->seq[j - 1], dseq->seq[i - 1], 1.0, -1.0);
