@@ -117,6 +117,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\gss\gss.c" />
+    <ClCompile Include="..\..\sw\fp.c" />
     <ClCompile Include="..\..\sw\gc_fp.c" />
     <ClCompile Include="..\..\sw\gc_sw.c" />
     <ClCompile Include="..\..\sw\lal_encoding.c" />
@@ -127,6 +128,7 @@
     <ClCompile Include="..\..\sw\sw.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sw\fp.h" />
     <ClInclude Include="..\..\sw\gc_fp.h" />
     <ClInclude Include="..\..\sw\gc_sw.h" />
     <ClInclude Include="..\..\sw\lal_encoding.h" />

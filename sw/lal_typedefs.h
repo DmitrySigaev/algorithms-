@@ -74,7 +74,7 @@ typedef struct tag_search_thr_profile
 } search_thr_profile_t;
 
 /**
-*  Structure of a search profile for frame plus algorithm 
+*  Structure of a search profile for frame plus algorithm
 *  @typedef {struct} search_profile_t
 *  @field gap   gap opening cost and gap extension cost
 *  @field score_matrix   score matrix
@@ -93,7 +93,23 @@ typedef struct tag_search_fp_profile
 
 	scoring_matrix_t *mtx;
 	char any_symbol;
+	size_t max_query_len;
 } search_fp_profile_t;
+
+
+/**
+*  Structure of a search thread depended profile
+*  @typedef {struct} search_thr_profile_t
+*  @field hearray  zero inital sequence
+*/
+typedef struct tag_search_fp_thr_profile
+{
+	double *h;
+	double *e;
+	double *f;
+	search_fp_profile_t *sp;
+} search_fp_thr_profile_t;
+
 
 typedef struct {
 	size_t x_s; /* x - left position or start   */

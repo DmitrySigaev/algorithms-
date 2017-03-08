@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\sw\lal_translate_table.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sw\fp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sw\sw.h">
@@ -72,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sw\lal_translate_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sw\fp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
