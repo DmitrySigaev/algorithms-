@@ -150,7 +150,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_195)
 {
 	scoring_matrix_t mtx;
 	int status = read_scoring_matrix(&mtx, gaptest1, strlen(gaptest1));
-//	char seq1[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCACGCCGCACTACTATGACCCAACGTAGGAAGTTGG" };
+	//	char seq1[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCACGCCGCACTACTATGACCCAACGTAGGAAGTTGG" };
 	char seq1[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCACGCCGCACTACTATGACCCAACGTAGGAAGTTGG" };
 	size_t len1 = strlen(seq1);
 	char seq2[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
@@ -196,7 +196,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_195gencore)
 
 	size_t len1 = strlen(seq1);
 	char seq2[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
-//	0x01c79c10      "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG"
+	//	0x01c79c10      "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG"
 
 	size_t len2 = strlen(seq2);
 	sequence_t inseq1 = { 1, (char *)seq1, len1 };
@@ -279,7 +279,7 @@ START_TEST(test_sw_gaptest1_261_88gencore)
 	char seq1[] = { "CAACTTCCTACGTTGGGTCATAGTAGTGCGTGGGCAATGCCTACGGAGGGGTGGAGCAACTGGCGCTATCACTTCTACCATCGTCTGCAGCGTACGA" };
 
 	size_t len1 = strlen(seq1);
-//	char seq2[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
+	//	char seq2[] = { "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG" };
 	char seq2[] = { "tcgtacgctgcagacgatggtagaagtgatagcgccagttgctccacccctccgtaggcattgcccacgccgcactactatgacccaacgtaggaagttg" };
 	//	0x01c79c10      "TCGTACGCTGCAGACGATGGTAGAAGTGATAGCGCCAGTTGCTCCACCCCTCCGTAGGCATTGCCCACGCCGCACTACTATGACCCAACGTAGGAAGTTG"
 
@@ -358,7 +358,7 @@ START_TEST(test_sw_gaptest1_261_90swipe)
 	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
-	ck_assert_int_eq((int)score.fdscore, 89); /* Max forward score */ 
+	ck_assert_int_eq((int)score.fdscore, 89); /* Max forward score */
 	ck_assert_int_eq((int)score.bdscore, 90); /* Max backward score */ // המכהום בûעü 89??
 
 	sequence_t reverse1 = { 3, malloc(len1 + 1), len1 };
@@ -576,6 +576,46 @@ START_TEST(test_sw_ACHA_ELEEL_test)
 	ck_assert_int_eq((int)score, 7);
 }END_TEST
 
+START_TEST(test_sw_ACHA_ELEEL_test_reverse)
+{
+	scoring_matrix_t mtx;
+	translate_table_t tt;
+	int status = read_translate_table(&tt, human40, strlen(human40));
+	status = read_scoring_matrix(&mtx, blosum62, strlen(blosum62));
+
+	// >ACHA_ELEEL P09688 electrophorus electricus (electric eel). acetylcholine receptor protein, alpha chain (fragment). 2/94
+	char seq1[] = { "SEDETRLVKNLFSGYNKVVRPVNH" };
+	size_t len1 = strlen(seq1);
+	// >HSBGL2
+	char seq2[] = { "ATGTCATACCTCTTATCTCCTCCCACAGCTCCTGGGCAACGTGCTGGTCTGTGTGCTGGCCCATCACTTTGGCAAAGAATTC" };
+	char any_symbol = 'x';
+	size_t len2 = strlen(seq2);
+	sequence_t inseq1 = { 1, (char *)seq1, len1 };
+	sequence_t inseq2 = { 2, (char *)seq2, len2 };
+	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
+	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
+
+	sequence_t inseqrev = { 3, malloc(len2), len2 };
+	sequence_t enseqrev = { 3, malloc(len2 + 1), len2 };
+
+	sequence_t any = { 3, malloc(1 + 1), 1 };
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq_trans(inseq2, enseq2, lal_na2indx, &tt);
+	lal_seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
+
+	mtx.scale = 10.0;
+	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0] };
+	double score = sw_gencore(&sp, &enseq2, &enseq1);
+	ck_assert_int_eq((int)score, 13);
+
+	lal_reverse(inseq2.seq, inseq2.len, inseqrev.seq, lal_revers31);
+	lal_seq2encodedseq_trans(inseqrev, enseqrev, lal_na2indx, &tt);
+
+	score = sw_gencore(&sp, &enseqrev, &enseq1);
+	ck_assert_int_eq((int)score, 19);
+
+}END_TEST
+
 START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double)
 {
 	scoring_matrix_t mtx;
@@ -597,15 +637,56 @@ START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double)
 	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	lal_seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
 	mtx.scale = 10.0;
-	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq2.len};
+	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq2.len };
 	search_thr_profile_t *sp_thr = search_thr_init(&sp, 1);
 	double score = sw_thr(sp_thr, &enseq2, &enseq1);
 	ck_assert_int_eq((int)score, 7);
 	search_thr_deinit(sp_thr, 1);
 }END_TEST
 
+START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double_reverse)
+{
+	scoring_matrix_t mtx;
+	translate_table_t tt;
+	int status = read_translate_table(&tt, human40, strlen(human40));
+	status = read_scoring_matrix(&mtx, blosum62, strlen(blosum62));
+
+	// >ACHA_ELEEL P09688 electrophorus electricus (electric eel). acetylcholine receptor protein, alpha chain (fragment). 2/94
+	char seq1[] = { "SEDETRLVKNLFSGYNKVVRPVNH" };
+	size_t len1 = strlen(seq1);
+	// >HSBGL2
+	char seq2[] = { "ATGTCATACCTCTTATCTCCTCCCACAGCTCCTGGGCAACGTGCTGGTCTGTGTGCTGGCCCATCACTTTGGCAAAGAATTC" };
+	char any_symbol = 'x';
+	size_t len2 = strlen(seq2);
+	sequence_t inseq1 = { 1, (char *)seq1, len1 };
+	sequence_t inseq2 = { 2, (char *)seq2, len2 };
+	sequence_t enseq1 = { 1, malloc(len1 + 1), len1 };
+	sequence_t enseq2 = { 2, malloc(len2 + 1), len2 };
+	sequence_t any = { 3, malloc(1 + 1), 1 };
+	sequence_t inseqrev = { 3, malloc(len2), len2 };
+	sequence_t enseqrev = { 3, malloc(len2 + 1), len2 };
+
+	lal_seq2encodedseq(inseq1, enseq1, lal_encode31);
+	lal_seq2encodedseq_trans(inseq2, enseq2, lal_na2indx, &tt);
+	lal_seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
+	mtx.scale = 10.0;
+	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq2.len };
+	search_thr_profile_t *sp_thr = search_thr_init(&sp, 2);
+	double score = sw_thr(sp_thr, &enseq2, &enseq1);
+	ck_assert_int_eq((int)score, 13);
+	lal_reverse(inseq2.seq, inseq2.len, inseqrev.seq, lal_revers31);
+	lal_seq2encodedseq_trans(inseqrev, enseqrev, lal_na2indx, &tt);
+
+	score = sw_thr(sp_thr + 1, &enseqrev, &enseq1);
+	ck_assert_int_eq((int)score, 19);
+
+	search_thr_deinit(sp_thr, 2);
+}END_TEST
+
 void addSWTC(Suite *s) {
 	TCase *tc_core = tcase_create("SW");
+	tcase_add_test(tc_core, test_sw_ACHA_ELEEL_test_model_specific_double_reverse);
+	tcase_add_test(tc_core, test_sw_ACHA_ELEEL_test_reverse);
 	tcase_add_test(tc_core, test_sw_ACHA_ELEEL_test_model_specific_double);
 	tcase_add_test(tc_core, test_sw_ACHA_ELEEL_test);
 	tcase_add_test(tc_core, test_sw_gaptest1_290_89_193swdirection2);
