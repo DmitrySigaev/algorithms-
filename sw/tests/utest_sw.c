@@ -62,6 +62,7 @@ START_TEST(test_sw_double_encoded_vtable)
 	search_swcg_profile_t sp = { -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_constant_gap_double(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 5); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 
@@ -110,6 +111,7 @@ START_TEST(test_sw_int_encoded_vtable)
 	search_swcg_profile_int_t sp = { -1, (!status) ? (NULL) : (&mtx) };
 	int64_t score = sw_constant_gap_int(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 5); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_affine_double)
@@ -144,6 +146,7 @@ START_TEST(test_sw_affine_double_encoded_vtable)
 	search_swag_profile_t sp = { -1, -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 5); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_affine_double_encoded_vtable_195)
@@ -164,6 +167,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_195)
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 195); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_affine_double_encoded_vtable_195swipe)
@@ -185,6 +189,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_195swipe)
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 195); /* Max forward score */
 	ck_assert_int_eq((int)score.bdscore, 195); /* Max backward score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_affine_double_encoded_vtable_195gencore)
@@ -208,6 +213,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_195gencore)
 	search_swag_profile_t sp = { -1, 0, (!status) ? (NULL) : (&mtx) };
 	double score = sw_gencore(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 195); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_affine_double_encoded_vtable_88)
@@ -227,6 +233,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_88)
 	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_affine_gap(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 88); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_affine_double_encoded_vtable_87swipe)
@@ -247,6 +254,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_87swipe)
 	region_t score = sw_alignment_swipe(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 87); /* Max forward score */
 	ck_assert_int_eq((int)score.bdscore, 87); /* Max backward score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 
@@ -267,6 +275,7 @@ START_TEST(test_sw_affine_double_encoded_vtable_88gencore)
 	search_swag_profile_t sp = { -11, -1, (!status) ? (NULL) : (&mtx) };
 	double score = sw_gencore(&sp, &enseq1, &enseq2);
 	ck_assert_int_eq((int)score, 88); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 //0x040fa27c "CAACTTCCTACGTTGGGTCATAGTAGTGCGTGGGCAATGCCTACGGAGGGGTGGAGCAACTGGCGCTATCACTTCTACCATCGTCTGCAGCGTACGA"   //_261
@@ -301,6 +310,7 @@ START_TEST(test_sw_gaptest1_261_88gencore)
 	}
 	score = sw_gencore(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score, 193);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_261_89gotoh)
@@ -334,6 +344,7 @@ START_TEST(test_sw_gaptest1_261_89gotoh)
 	}
 	score = sw_affine_gap(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score, 193);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_261_90swipe)
@@ -369,6 +380,7 @@ START_TEST(test_sw_gaptest1_261_90swipe)
 	score = sw_alignment_swipe(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 193); /* Max forward score */
 	ck_assert_int_eq((int)score.bdscore, 193); /* Max backward score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 // 0x04c9ef2c "CTTCCTACGTTGGGTCATAGTAGTGCGGCGTGGGCAATGCCTACGGAGGGGTGGAGCAACTGGCGCTATCACTTCTACCATCGTCTGCAGCGTACGA" //290
@@ -397,6 +409,7 @@ START_TEST(test_sw_gaptest1_290_90_194gencore)
 	}
 	score = sw_gencore(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score, 194);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_290_90_194gotoh)
@@ -424,6 +437,7 @@ START_TEST(test_sw_gaptest1_290_90_194gotoh)
 	}
 	score = sw_affine_gap(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score, 194);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_290_91_194swipe)
@@ -454,6 +468,7 @@ START_TEST(test_sw_gaptest1_290_91_194swipe)
 	score = sw_alignment_swipe(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score.fdscore, 194); /* Max forward score */
 	ck_assert_int_eq((int)score.bdscore, 194); /* Max backward score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_290_89_193swdirection)
@@ -487,6 +502,7 @@ START_TEST(test_sw_gaptest1_290_89_193swdirection)
 	ck_assert_int_eq((int)score.d, 193); /* Max  score */
 	free_matrix(&sd.score);
 	free_matrix(&sd.directions);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_290_76_194constant)
@@ -515,6 +531,7 @@ START_TEST(test_sw_gaptest1_290_76_194constant)
 	}
 	score = sw_constant_gap_double(&sp, &reverse1, &enseq2);
 	ck_assert_int_eq((int)score, 194); /* Max score */
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_gaptest1_290_89_193swdirection2)
@@ -548,6 +565,7 @@ START_TEST(test_sw_gaptest1_290_89_193swdirection2)
 	ck_assert_int_eq((int)score.d, 193); /* Max  score */
 	free_matrix(&sd.score);
 	free_matrix(&sd.directions);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_ACHA_ELEEL_test)
@@ -574,6 +592,7 @@ START_TEST(test_sw_ACHA_ELEEL_test)
 	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0] };
 	double score = sw_gencore(&sp, &enseq2, &enseq1);
 	ck_assert_int_eq((int)score, 7);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_ACHA_ELEEL_test_reverse)
@@ -613,6 +632,7 @@ START_TEST(test_sw_ACHA_ELEEL_test_reverse)
 
 	score = sw_gencore(&sp, &enseqrev, &enseq1);
 	ck_assert_int_eq((int)score, 19);
+	free_scoring_matrix(&mtx);
 
 }END_TEST
 
@@ -637,11 +657,12 @@ START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double)
 	lal_seq2encodedseq(inseq2, enseq2, lal_encode31);
 	lal_seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
 	mtx.scale = 10.0;
-	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq2.len };
+	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq1.len /*query*/ };
 	search_thr_profile_t *sp_thr = search_thr_init(&sp, 1);
-	double score = sw_thr(sp_thr, &enseq2, &enseq1);
+	double score = sw_thr(sp_thr, &enseq2, &enseq1 /*query*/);
 	ck_assert_int_eq((int)score, 7);
 	search_thr_deinit(sp_thr, 1);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double_reverse)
@@ -670,7 +691,7 @@ START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double_reverse)
 	lal_seq2encodedseq_trans(inseq2, enseq2, lal_na2indx, &tt);
 	lal_seq2encodedseq((sequence_t) { 3, &any_symbol, 1 }, any, lal_encode31);
 	mtx.scale = 10.0;
-	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq2.len };
+	search_swag_profile_t sp = { -10.5, -0.5, (!status) ? (NULL) : (&mtx), any.seq[0],  enseq1.len };
 	search_thr_profile_t *sp_thr = search_thr_init(&sp, 2);
 	double score = sw_thr(sp_thr, &enseq2, &enseq1);
 	ck_assert_int_eq((int)score, 13);
@@ -681,6 +702,7 @@ START_TEST(test_sw_ACHA_ELEEL_test_model_specific_double_reverse)
 	ck_assert_int_eq((int)score, 19);
 
 	search_thr_deinit(sp_thr, 2);
+	free_scoring_matrix(&mtx);
 }END_TEST
 
 void addSWTC(Suite *s) {
