@@ -10,6 +10,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #include <stdio.h>
 #include "../lal_tables.h"
 #include "../lal_translate_table.h"
+#include "../lal_report.h"
 
 
 char badttable[] = { "#Genetic code file > Standard genetic code   \n \
@@ -26,13 +27,14 @@ START_TEST(test_bad_table)
 	translate_table_t tt;
 	int status = read_translate_table(&tt, badttable, strlen(badttable));
 	ck_assert_int_eq(status, 0); /* bad format*/
+	report("bad format reported");
 }END_TEST
 
 START_TEST(test_human40)
 {
 	translate_table_t tt;
 	int status = read_translate_table(&tt, human40, strlen(human40));
-	ck_assert_int_eq(status, 0); /* bad format*/
+	ck_assert_int_eq(status, 1); /*success*/
 }END_TEST
 
 void addTranslateTableTC(Suite *s) {

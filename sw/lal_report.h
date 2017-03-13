@@ -12,5 +12,5 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 
 #define report_error(x) printf("lal-report {error}:  %s f:(%s) l:(%d)\n", x, __FILE__, __LINE__)
 #define report_warning(x) printf("lal-report {warning}: %s f:(%s) l:(%d)\n", x, __FILE__, __LINE__)
-
+#define report(x) printf("lal-report {check}: %s f:(%s) l:(%d)\n", x, __FILE__, __LINE__)
 #endif /* _LAL_REPORT_H_ */
