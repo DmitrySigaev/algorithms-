@@ -73,6 +73,16 @@ static descritor_t create_descritor(const char *tablestring, size_t len)
 	return dsc;
 }
 
+static void free_descritor(descritor_t * desc) {
+	desc->list[0] = NULL;
+	if (desc->data)
+		free(desc->data); // should be first;
+	desc->data = NULL;
+	if (desc->list)
+		free(desc->list);
+	*desc = (descritor_t) { NULL, NULL, 0 };
+}
+
 static int read_docs(translate_table_t *tt, descritor_t * desc)
 { /* fills docs  */
 	size_t cnt = 0;
@@ -237,6 +247,7 @@ int read_translate_table(translate_table_t *tt, const char *tablestring, size_t 
 		return 0;
 	}
 	deflate_table(tt, &desc);
+	free_descritor(&desc);
 	return 1;
 }
 
