@@ -118,7 +118,7 @@ typedef struct tag_descritor
 
 }descritor_t;
 
-descritor_t create_descritor(const char *matrixstring, size_t len)
+static descritor_t create_descritor(const char *matrixstring, size_t len)
 {
 	descritor_t dsc;
 	dsc.data = malloc(len + 1);
@@ -232,7 +232,7 @@ scaling_descritor_t read_table(scoring_matrix_t *mtx, descritor_t * desc, table_
 }
 
 
-void free_descritor(descritor_t * desc) {
+static void free_descritor(descritor_t * desc) {
 	desc->list[0] = NULL;
 	if (desc->data)
 		free(desc->data); // should be first;
