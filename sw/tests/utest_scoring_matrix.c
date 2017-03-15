@@ -10,6 +10,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #include <stdio.h>
 #include "../lal_tables.h"
 #include "../lal_scoring_matrix.h"
+#include "../lal_report.h"
 
 
 char badmatirx[] = { "#  Matrix contains errors \n \
@@ -22,6 +23,7 @@ START_TEST(test_bad_matrix)
 	scoring_matrix_t mtx;
 	int status = read_scoring_matrix(&mtx, badmatirx, strlen(badmatirx));
 	ck_assert_int_eq(status, 0); /* bad format*/
+	report("bad format reported");
 	ck_assert_int_eq((int)mtx.scale, -1);
 	free_scoring_matrix(&mtx);
 
