@@ -90,7 +90,7 @@ static double fp_ms(search_fp_thr_profile_t *s, const sequence_t * dseq, const s
 
 static double fp_ms(search_fp_thr_profile_t *s, const sequence_t * dseq, const sequence_t * qseq)
 {
-	const search_swag_profile_t *sp = s->sp;
+	const search_fp_profile_t *sp = s->sp;
 	double *ph = s->h;
 	double *pe = s->e;
 	double v;
@@ -125,7 +125,7 @@ typedef struct tag_align {
 
 
 /* optimization of matix Frame plus algorithm */
-tag_align score_frameplus_p2n_opt(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
+tag_align score_frameplus_p2n_opt_3(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
 {
 	/* What I know about the sequence:
 	1. before we do anything, nucleic seq. is prepened by a blank symbol.
