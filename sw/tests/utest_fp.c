@@ -221,7 +221,7 @@ START_TEST(test_fp_ACHA_ELEEL_test_model_specific_double)
 		- 23.0, /*gapOpen3 */ \
 		- 7.0, /* gapFrameOpen */ \
 		- 13.0, /* gapFrameExt */ \
-		(!status) ? (NULL) : (&mtx), any.seq[0]};
+		(!status) ? (NULL) : (&mtx), any.seq[0], enseq1.len /*very impotant params:  max of sequences length of slice date */};
 	search_fp_thr_profile_t *sp_thr = search_fp_thr_init(&sp, 2);
 	double score = fp_thr(sp_thr, &enseq2, &enseq1);
 	ck_assert_int_eq((int)score, 13);
