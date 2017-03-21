@@ -88,7 +88,7 @@ static double fp_ms(search_fp_thr_profile_t *s, const sequence_t * dseq, const s
 }
 #endif
 
-static double fp_ms(search_fp_thr_profile_t *s, const sequence_t * dseq, const sequence_t * qseq)
+static double fp_ms_old(search_fp_thr_profile_t *s, const sequence_t * dseq, const sequence_t * qseq)
 {
 	const search_fp_profile_t *sp = s->sp;
 	double *ph = s->h;
@@ -125,19 +125,16 @@ typedef struct tag_align {
 
 
 /* optimization of matix Frame plus algorithm */
-tag_align score_frameplus_p2n_opt_3(const search_fp_profile_t * sp, const sequence_t * dseq, const sequence_t * qseq)
+double fp_ms_release(const search_fp_thr_profile_t * s, const sequence_t * dseq, const sequence_t * qseq)
 {
-	/* What I know about the sequence:
-	1. before we do anything, nucleic seq. is prepened by a blank symbol.
-	2. Next, each position [i] is subst. with AA corresponding to [i-2,i-1, i]. It follows that the first 3 positions are always 'X' (no corr. AA).
-	3. Stop codon has code 27 (corr to '*' in blosum & oth matrices)
-	*/
+	const search_fp_profile_t *sp = s->sp;
+
 	enum state_t { s_start = 0, s_fgap, s_xgap, s_ygap, s_match, s_tmpmatch, s_end, s_state_size };
 	/* Datastructure: */
 
 	double  ***mattr;
 
-	tag_align max_v = (tag_align) { 0.0, -1, -1 }; /* best seen alignment score in a match state */
+	double score = 0.0;
 
 	mattr = malloc((dseq->len + 1) * sizeof(double *));
 
@@ -203,8 +200,8 @@ tag_align score_frameplus_p2n_opt_3(const search_fp_profile_t * sp, const sequen
 				mattr[i - 2][j - 1][s_match] + matchmax5),
 				mattr[i - 1][j - 1][s_match] + matchmax6);
 
-			if (max_v.score < mattr[i][j][s_match])
-				max_v = (tag_align) { mattr[i][j][s_match], i, j };
+			if (score < mattr[i][j][s_match])
+				score = mattr[i][j][s_match];
 		}
 	}
 	for (size_t i = 0; i < dseq->len + 1; i++)
@@ -213,7 +210,7 @@ tag_align score_frameplus_p2n_opt_3(const search_fp_profile_t * sp, const sequen
 			free(mattr[i][j]);
 		free(mattr[i]);
 	}
-	return max_v;
+	return score;
 }
 
 /* optimization of matix Frame plus algorithm */
@@ -313,7 +310,7 @@ double fp_thr(search_fp_thr_profile_t * sp, const sequence_t *dseq, const sequen
 	search_fp_profile_t *s = sp->sp;
 	memset(sp->h, 0, sizeof(double) * (qseq->len));
 	memset(sp->e, 0, sizeof(double) * (qseq->len));
-	return fp_ms(sp, dseq, qseq);
+	return fp_ms_release(sp, dseq, qseq);
 }
 
 

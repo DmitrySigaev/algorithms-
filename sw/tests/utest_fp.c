@@ -224,11 +224,11 @@ START_TEST(test_fp_ACHA_ELEEL_test_model_specific_double)
 		(!status) ? (NULL) : (&mtx), any.seq[0], enseq1.len /*very impotant params:  max of sequences length of slice date */};
 	search_fp_thr_profile_t *sp_thr = search_fp_thr_init(&sp, 2);
 	double score = fp_thr(sp_thr, &enseq2, &enseq1);
-	ck_assert_int_eq((int)score, 13);
+	ck_assert_int_eq((int)score, 15);
 	lal_reverse(inseq2.seq, inseq2.len, inseqrev.seq, lal_revers31);
 	lal_seq2encodedseq_trans(inseqrev, enseqrev, lal_na2indx, &tt);
 	score = fp_thr(sp_thr+1, &enseqrev, &enseq1);
-	ck_assert_int_eq((int)score, 19);
+	ck_assert_int_eq((int)score, 12);
 	search_fp_thr_deinit(sp_thr, 2);
 	free_scoring_matrix(&mtx);
 }END_TEST
