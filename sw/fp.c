@@ -190,13 +190,12 @@ double fp_ms_release(const search_fp_thr_profile_t * s, const sequence_t * dseq,
 				mattr[i][j - 1][s_ygap] + yext),
 				0 /*from s_start */);
 			/* depends on [i-3][j-1] */
-			mattr[i][j][s_match] = match + MAX(MAX(MAX(MAX(mattr[i - 3][j - 1][s_fgap],
-				mattr[i - 3][j - 1][s_xgap]),
-				mattr[i - 3][j - 1][s_ygap]),
-				mattr[i - 3][j - 1][s_match]),
-				0);
 			mattr[i][j][s_match] = MAX(MAX(MAX(0,
-				mattr[i][j][s_match]),
+				match + MAX(MAX(MAX(MAX(mattr[i - 3][j - 1][s_fgap],
+					mattr[i - 3][j - 1][s_xgap]),
+					mattr[i - 3][j - 1][s_ygap]),
+					mattr[i - 3][j - 1][s_match]),
+					0)),
 				mattr[i - 2][j - 1][s_match] + matchmax5),
 				mattr[i - 1][j - 1][s_match] + matchmax6);
 
