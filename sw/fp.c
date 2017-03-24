@@ -50,7 +50,7 @@ static double fp_ms(search_fp_thr_profile_t *s, const sequence_t * dseq, const s
 		// [i][0].F = mattr[i][0].X = [i][0].Y = [i][0].M = 0;
 		for (size_t j = 0; j < qseq->len; j++) {
 			const double M05 = M[j];
-			const double M4 = M[j-1];
+			const double M4 = M[j - 1];
 			M13 = M3[j];
 			M12 = M2[j];
 			M11 = M1[j];
@@ -60,19 +60,19 @@ static double fp_ms(search_fp_thr_profile_t *s, const sequence_t * dseq, const s
 			else
 				v = VDTABLE(dseq->seq[i], qseq->seq[j]);
 
-			M[j] = MAX(MAX(MAX(0,MAX(MAX(MAX(M13, F[j]), X[j]), pY)+ v), M12 + g->matchmax5), M11 + g->matchmax6);
+			M[j] = MAX(MAX(MAX(0, MAX(MAX(MAX(M13, F[j]), X[j]), pY) + v), M12 + g->matchmax5), M11 + g->matchmax6);
 			/*tmp.M = match + MAX(MAX(MAX(MAX([i - 3][j - 1].F, [i - 3][j - 1].X), [i - 3][j - 1].Y), [i - 3][j - 1].M), 0); */
 			/*mattr[i][j].M = MAX(MAX(MAX(0, tmp.M),[i - 2][j - 1].M + matchmax5), [i - 1][j - 1].M + matchmax6);*/
 			global_max = MAX(global_max, M[j]);
 
-			X[j] = MAX(MAX(M13 + g->xopen1,X[j] + g->xext1), F[j]+ g->fx1);
+			X[j] = MAX(MAX(M13 + g->xopen1, X[j] + g->xext1), F[j] + g->fx1);
 			/*[i][j].X = MAX(MAX([i - 3][j].X + xext1, [i - 3][j].M + xopen1),[i - 3][j].F + fx1);*/
 
-			F[j] = MAX(M11+ g->fopen, F1[j]+ g->fext);
+			F[j] = MAX(M11 + g->fopen, F1[j] + g->fext);
 			/*[i][j].F = MAX([i - 1][j].M + f_open,[i - 1][j].F + fext);*/
 
 			/* set YGap */
-			Y[j] = pY = MAX(MAX(MAX(M13/*i0*/ + g->yopen1, M14/*i1*/ + g->yopen2), M15/*i2*/+ g->yopen3),pY + g->yext);
+			Y[j] = pY = MAX(MAX(MAX(M13/*i0*/ + g->yopen1, M14/*i1*/ + g->yopen2), M15/*i2*/ + g->yopen3), pY + g->yext);
 			/*	[i][j].Y = MAX(MAX(MAX(MAX([i - 1][j - 1].M + yopen2, [i][j - 1].M + yopen1),[i - 2][j - 1].M + yopen3),[i][j - 1].Y + yext),
 			*/
 
@@ -123,9 +123,158 @@ typedef struct tag_align {
 	int y;
 } tag_align;
 
+static void r_shift3(double **v0, double **v1, double **v2)
+{
+	double *tmp = *v2;
+	*v2 = *v1;
+	*v1 = *v0;
+	*v0 = tmp;
+}
+
+static void r_shift5(double **v0, double **v1, double **v2, double **v3, double **v4)
+{
+	double *tmp = *v4;
+	*v4 = *v3;
+	*v3 = *v2;
+	*v2 = *v1;
+	*v1 = *v0;
+	*v0 = tmp;
+}
 
 /* optimization of matix Frame plus algorithm */
 double fp_ms_release(const search_fp_thr_profile_t * s, const sequence_t * dseq, const sequence_t * qseq)
+{
+	const search_fp_profile_t *sp = s->sp;
+	const size_t qlen = qseq->len;
+
+	double **vM = (double **)malloc(5 * sizeof(double *));
+	for (size_t i = 0; i < 5; i++) {
+		vM[i] = (double *)malloc(qlen * sizeof(double));
+		memset(vM[i], 0, qseq->len * sizeof(float));
+	}
+
+	double **vX = (double **)malloc(3 * sizeof(double *));
+	double **vF = (double **)malloc(3 * sizeof(double *));
+	for (size_t i = 0; i < 3; i++) {
+		vX[i] = (double *)malloc(qlen * sizeof(double));
+		memset(vX[i], 0, qlen * sizeof(double));
+
+		vF[i] = (double *)malloc(qlen * sizeof(double));
+		memset(vF[i], 0, qlen * sizeof(double));
+	}
+
+	double *M = vM[0], *M1 = vM[1], *M2 = vM[2], *M3 = vM[3], *M4 = vM[4];
+	double *X = vX[0], *X1 = vX[1], *X2 = vX[2];
+	double *F = vF[0], *F1 = vF[1], *F2 = vF[2];
+
+	double *M11 = (double *)malloc(qlen * sizeof(double));
+	double *M12 = (double *)malloc(qlen * sizeof(double));
+	double *M13 = (double *)malloc(qlen * sizeof(double));
+	double *M14 = (double *)malloc(qlen * sizeof(double));
+	double *M15 = (double *)malloc(qlen * sizeof(double));
+
+	double *vY = (double *)malloc(qlen * sizeof(double));
+
+	double score = 0.0;
+
+	for (size_t j = 2; j < dseq->len; j++) {
+		r_shift5(&M, &M1, &M2, &M3, &M4);
+		r_shift3(&X, &X1, &X2);
+		r_shift3(&F, &F1, &F2);
+
+		for (size_t i = 1; i < qlen; i++) {
+			M15[i] = M[i - 1];
+			M14[i] = M4[i - 1];
+			M13[i] = M3[i - 1];
+			M12[i] = M2[i - 1];
+			M11[i] = M1[i - 1];
+		}
+		M15[0] = M14[0] = M13[0] = M12[0] = M11[0] = 0;
+
+		float Y = 0;
+
+		for (size_t i = 0; i < qseq->len; i++) {
+			const double xopen1 = sp->gapOpen;		//43
+			const double xext1 = sp->gapExt;		//44
+			const double fx1 = sp->gapFrame;		//45 latest
+			const double matchmax5 = sp->matchMax5;	//32
+			const double matchmax6 = sp->matchMax6;	//33
+			const double yopen1 = sp->gapOpen;		//39
+			const double yopen2 = sp->gapOpen2;		//40
+			const double yopen3 = sp->gapOpen3;		//41
+			const double yext = sp->gapExt;			//42
+													/* constant */
+			const double fext = sp->gapFrameExt;		//38
+			const double f_open = sp->gapFrameOpen;	//37
+			double v;
+			if (!sp->mtx)
+				v = SCORE(qseq->seq[i], dseq->seq[j], 1.0, -1.0);
+			else
+				v = VDTABLE(qseq->seq[i], dseq->seq[j]);
+
+			const double match = v;
+
+			M[i] = MAX(MAX(MAX(0, M12[i] + matchmax5), M11[i] + matchmax6),
+				MAX(MAX(MAX(M13[i], F[i]), X[i]), Y) + match);
+			score = MAX(score, M[i]);
+			/* depends on [j-3][i-1] */
+/*			mattr[j][i][s_match] = MAX(MAX(MAX(0,
+				match + MAX(MAX(MAX(MAX(mattr[j - 3][i - 1][s_fgap],
+					mattr[j - 3][i - 1][s_xgap]),
+					mattr[j - 3][i - 1][s_ygap]),
+					mattr[j - 3][i - 1][s_match]),
+					0)),
+				mattr[j - 2][i - 1][s_match] + matchmax5),
+				mattr[j - 1][i - 1][s_match] + matchmax6);
+*/
+// ------------
+			X[i] = MAX(MAX(X[i] + xext1, F[i] + fx1), M13[i] + xopen1);
+			/* depends on [j-3][i] */
+//			mattr[j][j][s_xgap] = MAX(MAX(mattr[j - 3][i][s_xgap] + xext1, mattr[j - 3][i][s_match] + xopen1),
+				/*	    xopen1,  -- match above is non-negative*/ /* from s_start */
+//				mattr[i - 3][j][s_fgap] + fx1);
+// ---------
+			F[i] = MAX(M11[i] + f_open, F1[i] + fext);
+			/* depends on [j-1][i] */
+			//mattr[j][i][s_fgap] = MAX(mattr[j - 1][i][s_match] + f_open, mattr[j - 1][i][s_fgap] + fext);
+
+//--------
+			Y = vY[i] = MAX(MAX(MAX(M13[i] + yopen1, M14[i] + yopen2), M15[i] + yopen3), Y + yext);
+			/* depends on [j-2..i][i-1] */
+/*			mattr[j][i][s_ygap] = MAX(MAX(MAX(MAX(mattr[j - 1][i - 1][s_match] + yopen2,
+				mattr[j - 0][i - 1][s_match] + yopen1),
+				mattr[j - 2][i - 1][s_match] + yopen3),
+				mattr[j][i - 1][s_ygap] + yext), 0);
+
+*/
+		}
+	}
+	for (size_t i = 0; i < 3; i++) {
+		free(vM[i]);
+		free(vX[i]);
+		free(vF[i]);
+	}
+	for (size_t i = 3; i < 5; i++)
+		free(vM[i]);
+
+	free(vM);
+	free(vX);
+	free(vF);
+
+	free(M11);
+	free(M12);
+	free(M13);
+	free(M14);
+	free(M15);
+
+	free(vY);
+
+	return score;
+}
+
+
+/* optimization of matix Frame plus algorithm */
+double fp_ms_release_mtx(const search_fp_thr_profile_t * s, const sequence_t * dseq, const sequence_t * qseq)
 {
 	const search_fp_profile_t *sp = s->sp;
 
@@ -317,9 +466,9 @@ search_fp_thr_profile_t * search_fp_thr_init(search_fp_profile_t *s, size_t thr)
 {
 	search_fp_thr_profile_t * sthr = malloc(sizeof(search_fp_thr_profile_t) * thr);
 	for (size_t i = 0; i < thr; i++) {
-			sthr[i].h = malloc(sizeof(double) * s->max_query_len);
-			sthr[i].e = malloc(sizeof(double) * s->max_query_len);
-			sthr[i].sp = s;
+		sthr[i].h = malloc(sizeof(double) * s->max_query_len);
+		sthr[i].e = malloc(sizeof(double) * s->max_query_len);
+		sthr[i].sp = s;
 	}
 	return sthr;
 }
