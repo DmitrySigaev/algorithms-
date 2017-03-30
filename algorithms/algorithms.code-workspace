@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "/home/well/Projects/algorithms-/sw"
+		},
+		{
+			"path": "/home/well/Projects/algorithms-/gss"
+		},
+		{
+			"path": "/home/well/Projects/algorithms-/utests"
+		},
+		{
+			"path": "/home/well/Projects/algorithms-/check-vs"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"lal_encoding.h": "c"
+		}
+	}
+}

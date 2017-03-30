@@ -1,0 +1,131 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "windows": {
+                "command": "${workspaceRoot}/build.cmd",
+                "args": [
+                    "<Path/To/MinGW/Cygwin/Bin/Folder>",
+                    ""
+                ]
+            },
+            "linux": {
+                "command": "gcc",
+                "args": [
+                    "-std=c99 -Wall -pedantic -c -g",
+                      "../sw/gc_sw.c",
+                      "../sw/lal_encoding.c",
+                      "../sw/lal_matrix.c",
+                      "../sw/lal_scoring_matrix.c",
+                      "../sw/lal_tables.c",
+                      "../sw/lal_translate_table.c",
+                      "../sw/sw.c",
+                      "../sw/fp.c",
+                      "../sw/gc_fp.c",
+                      "../gss/gss.c",
+                      "../gss/tests/utest_gss.c",
+                      "../sw/tests/utest_encoding.c",
+                      "../sw/tests/utest_sw.c",
+                      "../sw/tests/utest_fp.c",
+                      "../sw/tests/utest_scoring_matrix.c",
+                      "../sw/tests/utest_translate_table.c",
+                      "../utests/check_algorithms.c",
+                      "-I../sw/tests",
+                      "-I../../check-vs/check-vssln/src-linux"
+                ]
+            },
+            "osx": {
+                "command": "g++",
+                "args": [
+                    "-g",
+                    "*.cpp",
+                    "-lpthread",
+                    "--std=c++11",
+                    "-o",
+                    "fib.out"
+                ]
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "linking",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "windows": {
+                "command": "${workspaceRoot}/build.cmd",
+                "args": [
+                    "<Path/To/MinGW/Cygwin/Bin/Folder>",
+                    ""
+                ]
+            },
+            "linux": {
+                "command": "gcc",
+                "args": [
+                    "-o",
+                    "check_algo.out",
+                    "gc_sw.o",
+                    "lal_encoding.o",
+                    "lal_matrix.o",
+                    "lal_scoring_matrix.o",
+                    "lal_tables.o",
+                    "lal_translate_table.o",
+                    "sw.o",
+                    "fp.o",
+                    "gc_fp.o",
+                    "gss.o",
+                    "utest_gss.o",
+                    "utest_encoding.o",
+                    "utest_sw.o",
+                    "utest_fp.o",
+                    "utest_scoring_matrix.o",
+                    "utest_translate_table.o",
+                    "check_algorithms.o",
+                    "../check-vs/installed/linux/lib/libcheck.a",
+                    "../check-vs/installed/linux/lib/libcompat.a",
+                    "-lm"
+                  /*  "-L../check-vs/installed/linux/lib",
+                    "-lcompat -lcheck"*/
+              ]
+            },
+            "osx": {
+                "command": "g++",
+                "args": [
+                    "-g",
+                    "*.cpp",
+                    "-lpthread",
+                    "--std=c++11",
+                    "-o",
+                    "fib.out"
+                ]
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }   
+    ]
+}
