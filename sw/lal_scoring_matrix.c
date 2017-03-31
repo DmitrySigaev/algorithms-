@@ -10,6 +10,7 @@ Contact: Dmitry Sigaev <dima.sigaev@gmail.com>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <limits.h>
 
 #include "lal_report.h"
 #include "lal_matrix.h"

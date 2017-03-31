@@ -150,7 +150,7 @@ double fp_ms_release(const search_fp_thr_profile_t * s, const sequence_t * dseq,
 	double **vM = (double **)malloc(5 * sizeof(double *));
 	for (size_t i = 0; i < 5; i++) {
 		vM[i] = (double *)malloc(qlen * sizeof(double));
-		memset(vM[i], 0, qseq->len * sizeof(float));
+		memset(vM[i], 0, qseq->len * sizeof(double));
 	}
 
 	double **vX = (double **)malloc(3 * sizeof(double *));
@@ -191,7 +191,7 @@ double fp_ms_release(const search_fp_thr_profile_t * s, const sequence_t * dseq,
 		}
 		M15[0] = M14[0] = M13[0] = M12[0] = M11[0] = 0;
 
-		float Y = 0;
+		double Y = 0;
 
 		for (size_t i = 0; i < qseq->len; i++) {
 			const double xopen1 = sp->gapOpen;		//43
